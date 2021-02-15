@@ -370,7 +370,7 @@ using static System.Console;
     
 ==========================================
 
---get set свойства--
+--свойства get set свойства--
 ------------------------------------------
 
  private int x;
@@ -471,6 +471,18 @@ private string name;
      
     // эквивалентно public string Name { get { return name; } }
     public string Name => name;
+
+чтобы присовить значение readonly свойству нужно использовать конструктор класса
+
+  public string Name { get; }// readonly свойство
+
+ public human(string name)//рабоает как с любой  reaadonly перменной
+        {
+            Name = name;
+        }
+
+  human h = new human("Max");
+  Console.WriteLine($"{h.Name}");//Max
 
 ==========================================
 
@@ -1779,7 +1791,7 @@ class Program
     }
 
 ------------------------------------------
-Метод GetHashCode позволяет возвратить некоторое числовое значение, которое будет соответствовать данному объекту или его хэш-код. 
+Метод GetHashCode позволяет возвратить некоторое числовое значение(уникальное для каждого обекта), которое будет соответствовать данному объекту или его хэш-код. 
 По данному числу, например, можно сравнивать объекты. 
 
  public string Name { get; set; }
@@ -1789,6 +1801,26 @@ class Program
         return Name.GetHashCode();
     }
 
+перопределние GetHashCode
+ class human
+    {
+        public string Name { get; }
+
+        public human(string name)
+        {
+            Name = name;
+        }
+
+        public override int GetHashCode()//перопределяем получение хашкода на проеку хешкода только имени 
+        {
+            return Name.GetHashCode();
+        }
+    }
+
+human h = new human("Max");
+human g = new human("Max");
+Console.WriteLine($"client {h.GetHashCode()} ,clientone {g.GetHashCode()}" );//client 1627628113, clientone 1627628113 hash коды одинаковые 
+//тк мы проверяе хеш только имени
 ------------------------------------------
 Метод GetType позволяет получить тип данного объекта
 
@@ -1815,7 +1847,9 @@ Person person3 = new Person { Name = "Tom" };
 bool p1Ep2 = person1.Equals(person2);   // false
 bool p1Ep3 = person1.Equals(person3);   // true
 
-
+Для типов значений == и Equals не имеет разницы, отличается ReferenceEquals, выдающий false, к примеру, для двух переменных типа int,
+ равных 0 (потому, что сравнивает не значения, а ссылки). Для ссылочных типов эквивалентны все три способа ==, Equals и ReferenceEquals, 
+ сравнивать значения аналогично типам значений возможно только с помощью переопределения, как и описано в примере
 ==========================================
 
 
