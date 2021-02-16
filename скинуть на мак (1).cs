@@ -2044,8 +2044,17 @@ Console.WriteLine($"{i.FromInstance.Id} {i.FromInstance.Sum} {i.ToInstance.Id} {
 
 ==========================================
 
+--generic where ограничения обощений--
+------------------------------------------
+С помощью универсальных параметров мы можем типизировать обобщенные классы любым типом. 
+Однако иногда возникает необходимость оргриничитт генерик определенным типом.
 
 
+
+
+
+
+==========================================
 --await timer--
 
 ------------------------------------------
@@ -2686,7 +2695,7 @@ using System;
 
 namespace ExperementNetCore
 {
-    delegate void AccountHandler<in T>(T message) where T : AccounArgs;
+    delegate void AccountHandler<in T>(T message) where T : AccounArgs;//in T это когд вы не можете 
 
     class AccounArgs
     {
