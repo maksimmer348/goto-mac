@@ -2359,7 +2359,88 @@ public static void Transact<T>(T acc1, T acc2, int sum) where T : Account<int>//
 
 --generic наследование--
 ------------------------------------------
-Один обобщенный класс может быть унаследован от другого обобщенного. При этом можно использовать различные варианты наследования.
+Один обобщенный класс может быть унаследован от другого обобщенного. При этом можно использовать различные 
+варианты наследования.
+
+class Account<T>//Допустим, у нас есть следующий базовый обощенный класс Account
+    {
+        public T Id { get; private set; }
+        public Account(T _id)
+        {
+            
+            Id = _id;
+        }
+    }
+    
+    
+    class UniversalAccount<T> : Account<T>//создание класса-наследника,
+        //который типизирован тем же типом, что и базовый
+    {
+        private T ss;
+        
+    public UniversalAccount(T id) : base(id)
+        {
+             
+        }
+    }
+
+    class StringAccount : Account<string>//в случае создание обычного
+        //необобщенного класса-наследника у базового класса надо явным
+        //образом определить используемый тип
+    {
+        public StringAccount(string id) : base(id)
+        {
+        }
+    }
+
+    class IntAccount<T> : Account<int>//Третий вариант представляет типизацию
+        //производного класса параметром совсем другого типа, отличного от
+        //универсального параметра в базовом классе. В этом случае для
+        //базового класса также надо указать используемый тип:
+    {
+        public T Code { get; set; }
+        public IntAccount(int id) : base(id)
+        {
+        }
+    }
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Account<string> acc1 = new Account<string>("34");//реализация базвого класса 
+            Account<int> acc3 = new UniversalAccount<int>(45);//апкаст класса наследника
+            UniversalAccount<int> acc2 = new UniversalAccount<int>(33);//реализщация
+            //класса наследника типизированого тем же типмо что и рожител
+            Console.WriteLine(acc1.Id);
+            Console.WriteLine(acc2.Id);
+            Console.WriteLine(acc3.Id);
+            
+            //Теперь в производном классе в качестве типа будет использоваться тип string
+            StringAccount acc4 = new StringAccount("43876");//реалищзация наследника 
+            //без обощения тк оно уже опредено на этапео создания этого класа
+            Account<string> acc5 = new StringAccount("43875");//при апкасте следует
+            //у класса родителя указывать испольлзуемый тип
+            Console.WriteLine(acc4.Id);
+            Console.WriteLine(acc5.Id);
+            
+            IntAccount<string> acc7 = new IntAccount<string>(5) { Code = "r4556" };//реалищзация 
+            //наследникаc с отличным от родителя генериком
+            //тип в родительнсом классе  может не совпадать с типом, который
+            // используется базовым классом
+            
+            Account<int> acc8 = new IntAccount<long>(7) { Code = 4587 };//при апкасте
+            // тип в родительнсом классе  может не совпадать с типом, который
+            // используется базовым классом
+            Console.WriteLine(acc7.Id + " " + acc7.Code);
+            Console.WriteLine(acc8.Id);
+              
+        }
+
+       
+    }
+
 
 
 
