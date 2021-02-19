@@ -2675,6 +2675,120 @@ class Person
             }
         }   
 ------------------------------------------
+Поиск блока catch при обработке исключений
+
+ данном случае стек вызовов выглядит следующим образом: метод Main вызывает метод Method1, который, 
+ в свою очередь, вызывает метод Method2. И в методе Method2 генерируется исключение 
+ DivideByZeroException. 
+
+    class TestClass
+    {
+        public static void Method1()
+        {
+            try
+            {
+2               Method2();//2. тот вызывает метод Method2
+            }
+5           //5. Система также ищет в этой конструкции блок catch, который обрабатывает
+            //исключение DivideByZeroException. Однако здесь также подобный блок catch отсутствует.
+
+            //catch (DivideByZeroException ex) // Однако такого блока catch так же нет
+            //{
+            //}
+            catch (IndexOutOfRangeException ex)
+            {
+                Console.WriteLine($"Catch в Method1 : {ex.Message}");
+            }
+10           finally//10. Далее система возвращается по стеку вызовов вниз в метод Method1
+                   //и выполняет в нем блок finally
+            {
+                Console.WriteLine("Блок finally в Method1");
+            }
+            Console.WriteLine("Конец метода Method1");
+        }
+        static void Method2()
+        {
+            //Система видит, что код, который вызывал исключение, помещен в конструкцию try..catch
+            try
+            {
+                int x = 8;
+3               int y = x / 0; //3. в метод Method2 генерируется исключение DivideByZeroException
+
+4               
+            }
+            //4. Система ищет в этой конструкции блок catch, который обрабатывает исключение
+            //DivideByZeroException. Однако такого блока catch нет.
+
+            //catch(DivideByZeroException ex)// Однако такого блока catch нет
+            //{
+            //}
+
+9           finally//9. Система поднимается обратно по стеку вызовов в самый верх в метод Method2
+                   //и выполняет в нем блок finally
+            {
+                Console.WriteLine("Блок finally в Method2");
+            }
+            Console.WriteLine("Конец метода Method2");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            try
+            {
+1               TestClass.Method1();//1. Метод Main вызывает метод Method1
+            }
+6           //6. Система далее опускается в стеке вызовов в метод Main, который вызывал Method1.
+            //Здесь вызов Method1 помещен в конструкцию try..catch
+
+7           //7. Система снова ищет в этой конструкции блок
+            //catch, который обрабатывает исключение DivideByZeroException. И в
+            //данном случае ткой блок найден.
+
+8           //8. Система наконец нашла нужный блок catch в методе Main, для обработки
+            //исключения, которое возникло в методе Method2 - то есть к начальному методу,
+            //где непосредственно возникло исключение. Но пока данный блок catch НЕ выполняется.
+
+11          catch (DivideByZeroException ex) //11. Затем система переходит по стеку вызовов вниз в
+                //метод Main и выполняет в нем найденный блок catch
+            {
+                Console.WriteLine($"Catch в Main : {ex.Message}");
+            }
+12          finally//12. и последующий блок finally
+            {
+                Console.WriteLine("Блок finally в Main");
+            }
+13          //13. Далее выполняется код, который идет в методе Main после конструкции try..catch
+            Console.WriteLine("Конец метода Main");
+            Console.Read();
+        }
+    }
+
+------------------------------------------
+try
+{
+    try
+    {
+        Console.Write("Введите строку: ");
+        string message = Console.ReadLine();
+        if (message.Length > 6)
+        {
+            throw new Exception("Длина строки больше 6 символов");
+        }
+    }
+    catch
+    {
+        Console.WriteLine("Возникло исключение");
+        throw;
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+}
+------------------------------------------
 фильтры исключений
 
 В этом случае обработка исключения в блоке catch производится только в том случае, если условие в выражении when 
@@ -2725,98 +2839,6 @@ catch(DivideByZeroException ex) //вот этот блок будет выбра
     {
         Console.WriteLine("Некорректный ввод");
     }
-------------------------------------------
-Поиск блока catch при обработке исключений
-
- данном случае стек вызовов выглядит следующим образом: метод Main вызывает метод Method1, который, 
- в свою очередь, вызывает метод Method2. И в методе Method2 генерируется исключение 
- DivideByZeroException. 
-
-    class TestClass
-    {
-        public static void Method1()
-        {
-            try
-            {
-2               Method2();//2. тот вызывает метод Method2
-            }
-5           //5. Система также ищет в этой конструкции блок catch, который обрабатывает
-            //исключение DivideByZeroException. Однако здесь также подобный блок catch отсутствует.
-
-            //catch (DivideByZeroException ex) // Однако такого блока catch так же нет
-            //{
-            //}
-            catch (IndexOutOfRangeException ex)
-            {
-                Console.WriteLine($"Catch в Method1 : {ex.Message}");
-            }
-10           finally//10. Далее система возвращается по стеку вызовов вниз в метод Method1
-                   //и выполняет в нем блок finally
-            {
-                Console.WriteLine("Блок finally в Method1");
-            }
-            Console.WriteLine("Конец метода Method1");
-        }
-        static void Method2()
-        {
-            //Система видит, что код, который вызывал исключение, помещен в конструкцию try..catch
-            try
-            {
-                int x = 8;
-3               int y = x / 0; //3. в метод Method2 генерируется исключение DivideByZeroException
-
-4               
-            }
-            //4. Система ищет в этой конструкции блок catch, который обрабатывает исключение
-            //DivideByZeroException. Однако такого блока catch нет.
-
-            //catch(DivideByZeroException ex)// Однако такого блока catch нет
-            //{
-            //}
-            
-9           finally//9. Система поднимается обратно по стеку вызовов в самый верх в метод Method2
-                   //и выполняет в нем блок finally
-            {
-                Console.WriteLine("Блок finally в Method2");
-            }
-            Console.WriteLine("Конец метода Method2");
-        }
-    }
-
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            try
-            {
-1               TestClass.Method1();//1. Метод Main вызывает метод Method1
-            }
-6           //6. Система далее опускается в стеке вызовов в метод Main, который вызывал Method1.
-            //Здесь вызов Method1 помещен в конструкцию try..catch
-
-7           //7. Система снова ищет в этой конструкции блок
-            //catch, который обрабатывает исключение DivideByZeroException. И в
-            //данном случае ткой блок найден.
-
-8           //8. Система наконец нашла нужный блок catch в методе Main, для обработки
-            //исключения, которое возникло в методе Method2 - то есть к начальному методу,
-            //где непосредственно возникло исключение. Но пока данный блок catch НЕ выполняется.
-
-11          catch (DivideByZeroException ex) //11. Затем система переходит по стеку вызовов вниз в
-                //метод Main и выполняет в нем найденный блок catch
-            {
-                Console.WriteLine($"Catch в Main : {ex.Message}");
-            }
-12          finally//12. и последующий блок finally
-            {
-                Console.WriteLine("Блок finally в Main");
-            }
-13          //13. Далее выполняется код, который идет в методе Main после конструкции try..catch
-            Console.WriteLine("Конец метода Main");
-            Console.Read();
-        }
-    }
-
 
 ------------------------------------------
 циклический вызов try...catch просто применив рекурсию, обернув блок в функцию:
@@ -2835,7 +2857,29 @@ return GetInput();
 }
 }
 
+var gg = Num(Console.ReadLine());
 
+static int Num(string num)
+        {
+
+            int ss = 20;
+            var gg = int.Parse(num);
+
+            try
+            {
+                ss = ss / gg;
+            }
+            catch (DivideByZeroException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("число не должно быть 0");
+                return Num(Console.ReadLine());//нужно сделать возрващение
+                // чтобы код не возрващал оригиальное значение ss
+            }
+
+
+            return ss;
+        }
 
 ------------------------------------------
 К слову сказать, лучше юзать throw ex только в самом начале стека вызова, а во всех последующих throw, 
@@ -3618,7 +3662,7 @@ static int Num(string num)
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine("число не должно быть 0");
-                Num(Console.ReadLine());
+                return Num(Console.ReadLine());
             }
 
 
