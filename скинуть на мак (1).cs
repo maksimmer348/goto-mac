@@ -164,6 +164,14 @@ string s = null;
 В классах Вы можете инициализировать значение полей непосредственно при их объявлении.
  В структурах такого сделать нельзя, и поэтому данный код вызовет ошибку при компиляции. Поэтому:
 Второе правило структуры: Нельзя инициализировать переменные в том месте, где они объявляются.
+
+struct Time
+   {
+      //private int hours = 10; так делать НЕЛЬЗЯ 
+      private int hours;//так делать можно
+      private int minutes;//так делать можно
+      private int seconds;//так делать можно    
+...
 ------------------------------------------
 Структуры синтаксически очень похожи на классы, Так же как и классы, структуры могут иметь поля,
 методы и конструкторы. НО существует принципиальное отличие, которое заключается в том,
@@ -177,6 +185,83 @@ string s = null;
 ------------------------------------------
 Мы выяснили, что все встроенные типы значений задаются структурами, например, числовые типы int, long, float 
 определены структурами System.Int32, System.Int64 и System.Single соответственно.
+------------------------------------------
+Структуры не могут содержать явных конструкторов без параметров
+
+
+ struct Time
+    {
+        public int hours, minutes, seconds;
+        public string age;
+
+        //public Time() так дельать НЕЛЬЗЯ
+        //Структуры не могут содержать явных конструкторов без параметров
+        //{
+        //    this.hours = 50;
+        //    this.minutes = 20;
+        //    this.seconds = 30;
+        //    this.age = "22";
+        //}
+        ...
+
+struct Time
+    {
+        public int Hours, Minutes, Seconds;
+        public string age;
+
+        public Time(int hours, int minutes, int seconds, string age)//мождно делать так
+        {
+            Hours = hours;
+            Minutes = minutes;
+            Seconds = seconds;
+            this.age = age;
+        }
+    ...
+------------------------------------------
+пример использовния структур возврат из метода
+
+  struct Time
+    {
+        public int hours, minutes, seconds;
+
+        public int height;
+        public string age;
+
+        public void Disp()
+        {
+            Console.WriteLine($"{hours} {minutes} {seconds}");
+        }
+    }
+
+    class HA<T>
+    {
+        public T haha;
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Time t = geTime("10", "12", "19");
+            t.Disp();//10 12 19
+
+            Time tt = geTime("15", "20", "30");
+            HA<Time> ha = new HA<Time>();
+            ha.haha = tt;
+            ha.haha.Disp();//15 20 30
+        }
+
+        static Time geTime(string h, string m, string s)//сдесь мы возвращаем из метода структура, 
+        //так можно добится возвращения не одного знгачения а сразу несокльких входящих в стурктуру
+        {
+            return new Time()
+            {
+                hours = int.Parse(h),
+                minutes = int.Parse(m),
+                seconds = int.Parse(s)//если не присовить значение одному из полей структры 
+                //оно будет иметь дефолтное значение, для значимой ерменной 0, для ссылочной null
+            };
+        }
+    }
 
 ------------------------------------------
 В отличие от классов, использование публичных полей в структурах в большинстве случаев не рекомендуется,
@@ -185,6 +270,7 @@ string s = null;
 
 struct Time
    {
+      //private int hours = 10; так делать НЕЛЬЗЯ 
       private int hours, minutes, seconds;
       public Time(int hh, int mm, int ss)
       {
@@ -213,6 +299,8 @@ struct Time
          Console.ReadKey();
       }
    }
+
+
 
 ==========================================
 
@@ -2334,7 +2422,6 @@ Console.WriteLine($"{i.FromInstance.Id} {i.FromInstance.Sum} {i.ToInstance.Id} {
         {
             Instantiator<int> i = new Instantiator<int> {instance = 10};
             Console.WriteLine(i.instance);
-
         }
 
 ------------------------------------------ 
