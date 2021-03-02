@@ -1917,14 +1917,58 @@ class Program
 
 
 
---сокрытие--
+--сокрытие (new void method)--
 ------------------------------------------
-это когда скрываем в производном классе функциноал базового класса
+Это когда скрываем в производном классе функциноал базового класса
 определение в классе-наследнике метода или свойства,которые соответствует по имени и набору параметров методу или
- свойству базового класса.
+свойству базового класса. по сути создается еще один метод с таким же названием не взяаный с пердыдущим, используется
+для разрешения конфликат имен без использования преопределения
 
- Для сокрытия членов класса применяется ключевое слово new. 
+Для сокрытия членов класса применяется ключевое слово new. 
 
+Если вы работаете с экземпляром класса-наследника через его родительский класс, то в случае, если вы будете вызывать
+ переопределенный виртуальный метод (override), то будет вызвана его реализация из наследника, а если перекрытый (new), 
+ то будет вызван метод базового класса
+
+class Main
+    {
+        public virtual void First()
+        {
+            Console.WriteLine("First from Main");
+        }
+
+        public void Second()
+        {
+            Console.WriteLine("Second from Main");
+        }
+    }
+
+    class Child : Main
+    {
+        public override void First()//Модификатор override расширяет реализацию для наследуемого члена.
+        {
+            Console.WriteLine("First from Child");
+        }
+
+        public new void Second()//Модификатор new создает новый член с таким же именем и приводит к скрытию исходного члена. 
+        {
+            Console.WriteLine("Second from Child");
+        }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Main main = new Child();//Если вы работаете с экземпляром класса-наследника через его родительский класс
+
+            main.First(); // то в случае, если вы будете вызывать
+ //переопределенный виртуальный метод (override) - выведет метод First у Child
+            main.Second(); // а если перекрытый (new), 
+ //то будет вызван метод базового класса - выведет метод Second у Main
+        }
+    }
+
+------------------------------------------
  class Person
     {
 
@@ -3923,7 +3967,7 @@ static void Main(string[] args)
             Console.Read();
 
 ------------------------------------------
-модификторы доступа не public
+явная реализация в случае модификторов доступа не public
 
 Члены интерфейса могут иметь разные модификаторы доступа. Если модификатор доступа не public, 
 а какой-то другой, то для реализации метода, свойства или события интерфейса в классах и
@@ -3973,11 +4017,187 @@ class Program
 ==========================================
 
 
---
+--Интерфейсы и наследование
 ------------------------------------------
+Если класс применяет интерфейс, то этот класс должен реализовать все методы и свойства интерфейса, 
+которые не имеют реализации по умолчанию. Однако также можно и не реализовать методы, 
+сделав их абстрактными, переложив право их реализации на производные классы
 
+interface IMovable
+    {
+        void Move();
+    }
+    abstract class Person : IMovable
+    {
+        public abstract void Move();//сделав метод асбтсрактным мы переносим его
+        //реализацию в класс потомок
+    }
+    class Driver : Person
+    {
+        public override void Move()//сдесь мы и реализуем этот класс
+        {
+            Console.WriteLine("Шофер ведет машину");
+        }
+    }
+
+     static void Main(string[] args)
+        {
+            Driver p = new Driver();
+
+            p.Move();//Шофер ведет машину
+        }
+
+------------------------------------------
+поведление метододв и свойств интерфейса без реализации их в классе наследнике, но с рализацией в 
+родительском.
+При реализации интерфейса учитываются также методы и свойства, унаследованные от базового класса
+
+interface IAction
+    {
+        void Move();
+    }
+    class BaseAction
+    {
+        public void Move()//в случае если в классе потомке HeroAction метод Move не будет определен, 
+        //тогда будет исопльзоватся эта реализация
+        {
+            Console.WriteLine("Move in BaseAction");
+        }
+    }
+    class HeroAction : BaseAction, IAction//название базового класса ВСЕГДА должно быть указано до 
+    //реализуемых интерфейсов
+    {
+        //Move может быть не определен,но тогда используется реализация из класса родителя
+    }
+
+static void Main(string[] args)
+        {
+            BaseAction ba = new BaseAction();
+            ba.Move(); //Move in BaseAction
+             HeroAction ha = new HeroAction();
+            ha.Move(); //Move in BaseAction
+        }
+Здесь класс HeroAction реализует интерфейс IAction, однако для реализации метода Move из интерфейса 
+применяется метод Move, унаследованный от базового класса BaseAction. Таким образом, 
+класс HeroAction может не реализовать метод Move, так как этот метод уже определен в базовом классе BaseAction;        
+------------------------------------------
+Изменение реализации интерфейсов в производных классах
+
+Может сложиться ситуация, что базовый класс реализовал интерфейс, но в классе-наследнике
+необходимо изменить реализацию этого интерфейса. 
+
+ --1 вариант  переопределение виртуальных/абстрактных методов
+
+  interface IAction
+    {
+        void Move();
+    }
+    class BaseAction : IAction
+    {
+        public virtual void Move()//В базовом классе BaseAction реализованный метод интерфейса определен как виртуальный
+                                  //(можно было бы также сделать его абстрактным)
+        {
+            Console.WriteLine("Move in BaseAction");
+        }
+    }
+    class HeroAction : BaseAction//наследуем только от BaseAction
+    {
+        public override void Move()//а в производном классе мы его переопределяем.
+        {
+            Console.WriteLine("Move in HeroAction");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            BaseAction action = new BaseAction();
+            action.Move();//Move in BaseAction
+            BaseAction action1 = new HeroAction();
+            action1.Move();// Move in HeroAction
+
+            IAction action2 = new HeroAction();//При вызове метода через переменную интерфейса, если она ссылается
+            //на объект производного класса, будет использоваться реализация из производного класса
+            action2.Move(); // Move in HeroAction
+            IAction action3 = new BaseAction();//При вызове метода через переменную интерфейса, если она ссылается
+            //на объект производного класса, будет использоваться реализация из производного класса
+            action3.Move();//Move in BaseAction
+        }
+    }
+
+--2 вариант - сокрытие метода в производном классе
+
+Так как интерфейс реализован именно в классе BaseAction, то через переменную action2 можно обратиться 
+только к реализации метода Move из базового класса BaseAction.
+
+interface IAction
+{
+    void Move();
+}
+class BaseAction : IAction
+{
+    public void Move()//реализуем метод из интерфейса 
+    {
+        Console.WriteLine("Move in BaseAction");
+    }
+}
+class HeroAction : BaseAction//наследуем только от BaseAction
+{
+    public new void Move()// сокрытием метода в производном классе мы переопредлделяем метод из базовго класса
+    {
+        Console.WriteLine("Move in HeroAction");
+    }
+}
+
+BaseAction action1 = new HeroAction();
+action1.Move();            // Move in BaseAction
+ 
+IAction action2 = new HeroAction();
+action2.Move();             // Move in BaseAction
+
+--3 варинат повторная реализация интерфейса в классе-наследнике
+
+interface IAction
+    {
+        void Move();
+    }
+    class BaseAction : IAction
+    {
+        public void Move()
+        {
+            Console.WriteLine("Move in BaseAction");
+        }
+    }
+    class HeroAction : BaseAction, IAction//повторная реализуем интерфейс в классе-наследнике, 
+//и за одно наследуемся от класса родителя
+    {
+        public new void Move()//еще один метод с таким же названием не взяаный с пердыдущим,
+            //используется для разрешения конфликат имен без использования преопределения
+        {
+            Console.WriteLine("Move in HeroAction");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            BaseAction action1 = new HeroAction();//Если вы работаете с экземпляром класса-наследника 
+            //HeroAction, через его родительский класс BaseAction...
+            action1.Move(); //...то если исопльзовать тут перекрытый(new) метод, 
+            //то будет вызван метод Move из базового класса BaseAction те - выведется Move in BaseAction          
+
+            IAction action2 = new HeroAction();//При вызове метода Move через переменную интерфейса action2, 
+            //если она ссылается на объект производного класса new HeroAction(), 
+            //будет использоваться реализация из производного класса...
+            action2.Move();             //...вот эта реализация - выведется Move in HeroAction
+
+            HeroAction action3 = new HeroAction();
+            action3.Move();             // Move in HeroAction
+        }
+    }
 ==========================================
-
 
 
 --await timer--
