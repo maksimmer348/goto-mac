@@ -4197,6 +4197,9 @@ interface IAction
             action3.Move();             // Move in HeroAction
         }
     }
+
+
+    
 ==========================================
 
 
@@ -4330,18 +4333,24 @@ public StopBits ConvertStopBits(int stopBit)
 Если делегат принимает параметры, то в метод Invoke передаются значения для этих параметров.
 
 Другой пример анонимных методов - передача в качестве аргумента для параметра, который представляет делегат
+о в одной используется ?
 ------------------------------------------
 delegate void MessageHandler(string message);
-    static void о в одной используется ?Main(string[] args)
-    {
-        ShowMessage("hello!", delegate(string mes){ Console.WriteLine(mes); });//Здесь всего лишь передаем параметры 
-        //для функции
-    }
+
 
     static void ShowMessage(string mes, MessageHandler handler) //handler теперь указывает на анонимный метод 
     //и по сути является им
     {
         handler(mes); Отсюда вызывается сообщение на консоль!
+    }
+
+     static void Main(string[] args)
+    {
+        ShowMessage("hello!", delegate(string mes)
+        { 
+        Console.WriteLine(mes); 
+        });//Здесь всего лишь передаем параметры 
+        //для функции
     }
 
 использование делегатов в качестве парметров анонимного метода;
@@ -4375,9 +4384,9 @@ delegate void MessageHandler(string message);
             }
             return result;
         }
-
- обобщённый делегат ;
 ------------------------------------------
+ обобщённый делегат ;
+
 delegate возвращаемый_тип имя_делегата<список_параметров_типа>(список_аргументов);
 delegate T 				  Operation	  <T, K ,J>				  (K val, J value);
 
@@ -4462,15 +4471,19 @@ static void Main(string[] args)
                 Console.WriteLine("Разность чисел: " + (x1 - x2));
             }
 
-Predicate         
+         
 ------------------------------------------
+Predicate
+
 Predicate<int> isPositive = x => x > 0;
 
                 Console.WriteLine(isPositive(20));
                 Console.WriteLine(isPositive(-20));
 
-Func
+
 ------------------------------------------
+Func
+
 возвращает результат действия и может принимать 
 параметры. Он также имеет различные формы: от Func<out T>(), где T - тип возвращаемого значения, 
 до Func<in T1, in T2,...in T16, out TResult>(), то есть может принимать до 16 параметров.
@@ -4997,3 +5010,100 @@ static int Num(string num)
         }
 
 ==========================================
+ delegate void Operations<T>(int i, T acc1, T acc2) where T : IAccount, IClient;
+    interface IAccount
+    {
+      
+        int CurrentSum { get; } // Текущая сумма на счету
+        void Put(int sum); // Положить деньги на счет
+        void Withdraw(int sum); // Взять со счета
+    }
+
+    interface IClient
+    {
+        string Name { get; set; }
+    }
+   
+    class Client : IAccount, IClient
+    {
+     
+        int _sum; // Переменная для хранения суммы
+        public Client(string name, int sum)
+        {
+            Name = name;
+            _sum = sum;
+          
+        }
+
+        public string Name { get; set; }
+
+        public int CurrentSum
+        {
+            get { return _sum; }
+        }
+
+        public void Put(int sum)
+        {
+            _sum += sum;
+        }
+
+        public void Withdraw(int sum)
+        {
+            if (sum <= _sum)
+            {
+                _sum -= sum;
+            }
+        }
+    }
+
+    
+
+    class Transaction<T> where T : IAccount, IClient
+    {
+        
+        public void Operate(int sum, T acc1, T acc2, Operations<T> op)
+        {
+           op.Invoke(sum, acc1, acc2);
+
+            Console.WriteLine($"{acc1.Name} : {acc1.CurrentSum}\n{acc2.Name} : {acc2.CurrentSum}");
+        }
+
+        public static void Withdraw(int sum, T acc1, T acc2) 
+        {
+            if (acc1.CurrentSum >= sum)
+            {
+                acc1.Withdraw(sum);
+                acc2.Put(sum);
+
+            }
+        }
+        public static void Put(int sum, T acc1, T acc2)
+        {
+            if (acc1.CurrentSum >= sum)
+            {
+                acc1.Put(sum);
+                acc2.Withdraw(sum);
+
+            }
+        }
+
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            Client account1 = new Client("Tom", 200);
+            Client account2 = new Client("Bob", 300);
+
+            Transaction<Client> transaction = new Transaction<Client>();
+
+
+            transaction.Operate(150, account1, account2, Transaction<Client>.Put);
+            transaction.Operate(150, account1, account2, Transaction<Client>.Withdraw);
+
+        }
+
+    }
+}
