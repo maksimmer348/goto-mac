@@ -4712,16 +4712,17 @@ delegate void MessageHandler(string message);
         //для функции
     }
 
-использование делегатов в качестве парметров анонимного метода;
+
 ------------------------------------------
+использование делегатов в качестве парметров анонимного метода;
  int[] integers = { 2, 7, 3, 6, 5, 4, 7, 8, 9 };
 
             // найдем сумму чисел больше 5
-            int result = Sum(integers, ss => ss > 5);//эта записаь аналогична нижеследующей
+            int result = Sum(integers, ss => ss > 5);//эта записаь аналогична нижеследующей...
             Console.WriteLine(result);
 
             // найдем сумму четных чисел
-            int result2 = Sum(integers, delegate(int ss)//эта записаь аналогична вышеследующей
+            int result2 = Sum(integers, delegate(int ss)//...эта записаь аналогична вышеследующей
             {
                 if (ss % 2 == 0)
                 {
@@ -4744,7 +4745,86 @@ delegate void MessageHandler(string message);
             return result;
         }
 ------------------------------------------
- обобщённый делегат ;
+Делегаты и метода со скобками и без скобок
+ // Объявить тип делегата. 
+    delegate string StrMod(string str);
+    class StringOps
+    {
+        // Заменить пробелы дефисами. 
+        public string ReplaceSpaces(string s)
+        {
+            Console.WriteLine("Замена пробелов дефисами.");
+            return s.Replace(' ', '-');
+        }
+        // Удалить пробелы. 
+        public string RemoveSpaces(string s)
+        {
+            string temp = "";
+            int i;
+            Console.WriteLine("Удаление пробелов.");
+            for (i = 0; i < s.Length; i++)
+                if (s[i] != ' ') temp += s[i];
+            return temp;
+        }
+    }
+
+    delegate int CountIt(int end);
+
+    class VarCapture
+    {
+        public static CountIt Counter()//в том методе явно создавался новый анонимный
+            //делегат, который потом возвращался этим методом
+        {
+           
+            
+            CountIt ctObj = delegate(int end)//создание ананоимного делегата
+            {
+                int sum = 0;
+                for (int i = 0; i <= end; i++)
+                {
+                    Console.WriteLine(i);
+                    sum += i;
+                }
+
+                return sum;
+            };
+            return ctObj;//возвращение анонимного делегата
+        }
+    }
+
+    class DelegateTest
+    {
+        static void Main()
+        {
+            StringOps so = new StringOps(); // создать экземпляр 
+            // объекта класса StringOps 
+            string str;
+
+            // Инициализировать делегат. 
+            StrMod strOp = so.ReplaceSpaces;//Вот в этой строчке инициализируется делегат
+            //ссылкой на метод, потому тут скобки не нужны.
+            str = strOp("Это простой тест");// Вызвать методы с помощью делегатов. 
+            Console.WriteLine("Результирующая строка: " + str);
+            
+
+            strOp = so.RemoveSpaces;//Вот в этой строчке инициализируется делегат
+            //ссылкой на метод, потому тут скобки не нужны.
+            str = strOp("Это простой тест");// Вызвать методы с помощью делегатов. 
+            Console.WriteLine("Результирующая строка: " + str);
+            
+            CountIt count = VarCapture.Counter();//здесь вызывается метод, который создает
+            //делегат, а не создается делегат, а если мы вызываем метод, то обязательно нужны скобки.
+
+            int result;
+            result = count(3);
+            Console.WriteLine("Сумма 3 равна " + result);
+            Console.WriteLine();
+            result = count(5);
+            Console.WriteLine("Сумма 5 равна " + result);
+        }
+    }
+------------------------------------------
+ обобщённый делегат;
 
 delegate возвращаемый_тип имя_делегата<список_параметров_типа>(список_аргументов);
 delegate T 				  Operation	  <T, K ,J>				  (K val, J value);
@@ -4772,7 +4852,7 @@ delegate T 				  Operation	  <T, K ,J>				  (K val, J value);
 
 
 ------------------------------------------
-ковариативные и конвариаативные Делегаты
+Ковариантность делегатов
 
 Ковариантность позволяет возвращать из метода объект, тип которого является производным от типа, возвращаемого делегатом
 (предпологается upcasting).
@@ -4786,7 +4866,7 @@ delegate T 				  Operation	  <T, K ,J>				  (K val, J value);
  параметру-типу T.
 
 
- class Car
+  class Car
     {
         public void Drive()
         {
@@ -4796,24 +4876,28 @@ delegate T 				  Operation	  <T, K ,J>				  (K val, J value);
 
     class Mersedes : Car
     {
-        public string ClassName;
-
+        public string ClassName;//расширяем базовый функционалл класса Car
     }
 
 
     class Uaz : Car
     {
-        public string MaxSpeed;
+        public string MaxSpeed;//расширяем базовый функционалл класса Car
     }
 
     delegate T MyDelegate<out T>(); //указывает на то что тут будет использоватсяя ковариантность
-
+    
     class Programm
     {
-        static Mersedes mersedesBuilder()
+        static Mersedes MersedesBuilder()
         {
             return new Mersedes();
         }
+        static Mersedes MersedesBuilderTwo()
+        {
+            return new Mersedes();
+        }
+
 
         static Uaz UazBuilder()
         {
@@ -4823,16 +4907,39 @@ delegate T 				  Operation	  <T, K ,J>				  (K val, J value);
 
         static void Main(string[] args)
         {
-            MyDelegate<Uaz> uaz = new MyDelegate<Uaz>(UazBuilder);
-            MyDelegate<Car> car = uaz;
-            uaz.Invoke().MaxSpeed = "10";
-                //car.Invoke().MaxSpeed = "15";//это выдаст ошибку тк поле MaxSpeed принадлежит к классу Uaz
+            MyDelegate<Mersedes> mers = MersedesBuilder;//создаем делегат типизированный классом Mersedes,
+            //ссвязываем этот делегат с методом MersedesBuilder  
+            MyDelegate<Car> car = mers;//здесь происходит апкаст, тк мы присваеваем делегату car
+            //типизированолму классом Car, делегат типизировный классом Mersedes, те произзводим
+            //апкаст делегата
+
+            mers().Drive();
+            mers().ClassName = "S-class";
+
+            car().Drive();
+            //car().ClassName = "S-class"; это выдаст ошибку тк поле ClassName принадлежит к классу
+            //Mersedes.И хотя теперь car и mers указывают на одно и то же место в памяти(MyDelegate<Mersedes>),
+            // переменной car будет доступна только та часть, которая представляет функционал типа MyDelegate<Car>.
+            // Это назыывается  восходящие преобразования или апкаст
+
+            Console.WriteLine(mers.GetType() + " " + car().GetType());//mers.GetType() в этом примере делегат
+            //инициализируется ссылкой на метод, потому тут скобки нет.
+            //А здесь car().GetType() здесь через делегат вызываем метод static Mersedes MersedesBuilder(),
+            //на который ссылается данный делегат, а не создаем делегат как в примере выше,
+            //а если мы вызываем метод, то обязательно нужны скобки.
+
+            MyDelegate<Uaz> uaz = UazBuilder;
+            MyDelegate<Car> car2 = uaz;
+
+            //car.Invoke().MaxSpeed = "15";//это выдаст ошибку тк поле MaxSpeed принадлежит к классу Uaz
             //а ссылочная перменная обьект car указывает сейчас на на клсасс в   
 
             Console.WriteLine();
 
         }
-
+    }
+------------------------------------------ 
+Контрвариантность делегата 
 Контрвариантность делегата предполагает, что типом параметра может быть более универсальный тип.(предпологается downcasting)
 Контрвариантность - в банк могут входить люди. 
 Так, если класс String наследуется от класса Object, а делегат Action<T> определён как метод, принимающий объект типа T, 
