@@ -1583,7 +1583,7 @@ Employee emp = new Employee ("Tom", "Microsoft");//имя мы передаем 
             // но переменной person будет доступна только та часть, которая представляет функционал типа Person.
             // Это назыывается  восходящие преобразования
 
-            if (employee is Person person)//это аналогично вышенпаисной констркуции (Person person = employee) 
+            if (employee is Person person)//это аналогично вышенаписаной констркуции (Person person = employee) 
             //но здесь дополнительно идет проверка на возможность преобразования выражения в указанный тип и, 
             //если это возможно, приводит переменную к переменной этого типа.
         	{
@@ -1593,12 +1593,7 @@ Employee emp = new Employee ("Tom", "Microsoft");//имя мы передаем 
             //а ссылочная перменная обьект person, указывает сейчас на класс Person, те поля и методы обьекта
             //employee перменной person недоступны
         	}
-
-            Console.WriteLine(person.Company);//это выдаст ошибку тк поле Company принадлежит к классу Employee
-            //а ссылочная перменная обьект person, указывает сейчас на класс Person, те поля и методы обьекта
-            //employee перменной person недоступны
-			Console.WriteLine(person.Name);
-
+			
             Person person1 = new Client("Bob", "ContosoBank");//Здесь переменная person1, которая представляет
             //тип Person, хранит ссылку на объект Client, поэтому также выполняется восходящее неявное преобразование
             //от производного класса Client к базовому типу Person.
@@ -1611,8 +1606,6 @@ Employee emp = new Employee ("Tom", "Microsoft");//имя мы передаем 
             object person2 = new Employee("Tom", "Microsoft");  // от Employee к object
             object person3 = new Client("Bob", "ContosoBank");  // от Client к object
             object person4 = new Person("Sam"); // от Person к object
-            
-           
         }
     }
 
@@ -1672,28 +1665,55 @@ is
 Структура - это тип значения(стурктура является значимым типом), поэтому ее нельзя использовать с as оператором,
 тк as Оператор должен иметь возможность присвоить значение NULL ,
 если терпит неудачу. Это возможно только со ссылочным типом или типом значения, допускающим значение NULL.
-------------------------------------------
-is в случае апкаста
 
-if (employee is Person person)//это аналогично вышенпаисной констркуции 
-    //здесь идет проверка на можно ли преобразовать выражение в указанный тип и, если можно,
-    // приводит переменную к переменной этого типа.
+Employee employee = new Employee("Tom", "Microsoft");
+            
+            Person person = employee;   // преобразование от Employee к Person
+            // В итоге переменные employee и person будут указывать на одно и то же место в памяти(Employee),
+            // но переменной person будет доступна только та часть, которая представляет функционал типа Person.
+            // Это назыывается  восходящие преобразования
+
+            if (employee is Person person)//это аналогично вышенпаисной констркуции (Person person = employee) 
+            //но здесь дополнительно идет проверка на возможность преобразования выражения в указанный тип и, 
+            //если это возможно, приводит переменную к переменной этого типа. если это не возможно
+            // такая проверка вернет значение false, и преобразование не сработает.
+            {
+            //varname назначается только в пределах инструкции if
+            Console.WriteLine(person.Name);
+            Console.WriteLine(person.Company);//это выдаст ошибку тк поле Company принадлежит к классу Employee
+            //а ссылочная перменная обьект person, указывает сейчас на класс Person, те поля и методы обьекта
+            //employee перменной person недоступны
+            }
+
+еще одна проверка допустимости преобразования с помощью ключевого слова is
+
+class Person
     {
-    	//varname назначается только в пределах инструкции if
-    Console.WriteLine(person.Name);
-    Console.WriteLine(person.Company);//это выдаст ошибку тк поле Company принадлежит к классу Employee
-    //а ссылочная перменная оьект person указывает сейчас на на клсасс в heap Person  
+        public string Name { get; set; }
+        public Person(string name)
+        {
+            Name = name;
+        }
+        public void Display()
+        {
+            Console.WriteLine($"Person {Name}");
+        }
     }
-else
+
+    class Employee : Person
     {
-        Console.WriteLine("Преобразование не допустимо");
+        public string Company { get; set; }
+        public Employee(string name, string company) : base(name)
+        {
+            Company = company;
+        }
+
     }
 
-------------------------------------------
-is в случае даункаста
+    Person person = new Person("Tom");
 
-Person person = new Person("Tom");
-    if(person is Employee)
+    if(person is Employee)//Выражение person is Employee проверяет, является ли переменная person объектом типа Employee.
+    // Но так как в данном случае явно не является, то такая проверка вернет значение false, и преобразование не сработает.
     {
         Employee emp = (Employee)person;
         Console.WriteLine(emp.Company);
@@ -1701,11 +1721,10 @@ Person person = new Person("Tom");
     else
     {
         Console.WriteLine("Преобразование не допустимо");
-    }      	
+    }       
+
 ------------------------------------------
 as
-
-as в случае даункаста
 
 Person person = new Person("Tom");
 Employee emp = person as Employee;//пытается преобразовать выражение к определенному типу в
