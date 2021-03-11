@@ -4857,6 +4857,64 @@ delegate T 				  Operation	  <T, K ,J>				  (K val, J value);
 Ковариантность позволяет возвращать из метода объект, тип которого является производным от типа, возвращаемого делегатом
 (предпологается upcasting).
 
+ class Person
+    {
+        public string Name { get; set; }
+    }
+
+    class Client : Person
+    {
+        public string LastName { get; set; }
+    }
+
+    delegate Person PersonFactory(string name);//делегат возвращает тип Person
+    //который является базовым типом для производного типа Client
+
+
+    class Programm
+    {
+        private static Person BuildPerson(string name)//этот метод у нас возвращает обьект 
+        //Person что соотвтетвует делегату PersonFactory здесь нет необходимости  использовать
+        //ковариантность делегатов
+        {
+            return new Person
+            {
+                Name = name
+            };
+        }
+
+        private static Client BuildClient(string name) // этот метод возрващает
+        //обьект класса Client, что недолжно бы соответовать делегату PersonFactory,
+        //НО КОВАРИАНТНОСТЬ позволяет вставить этот метод в этот делегат и вернуть из метода
+        //объект Client - тип который является ПРОИЗВОДНЫМ от типа  который возвращает делегат
+        //PersonFactory (делегат возвращает тип Person который является базовым для Client)
+        {
+            return new Client//возвращаем из метода объект Client
+            {
+                Name = name
+            };
+        }
+        static void Main(string[] args)
+        {
+            PersonFactory personDel; //создаем перменную делегата она предназначена для методов возвращающих 
+            //обьекты класса Person
+
+            personDel = BuildPerson;// инициализируем перменную делегата методом который возварщает
+            //обьект Person те используем делегат стандартно без использованиря апкастов 
+            Person p = personDel("Tom");
+            Console.WriteLine($"{p.Name} {p.GetType()}");// Tom ExperementNetCore.Person
+            
+            personDel = BuildClient; // инициализируем перменную делегата методом который возварщает
+            //обьект Client те используем делегат конвариантно
+            Person p2 = personDel("Max"); // То есть здесь делегат возвращает объект Client и
+            //апкастит его к обьекту класса Person 
+            Console.WriteLine(p2.Name + " " + p2.GetType());//Max ExperementNetCore.Client
+
+            Console.Read();
+        }
+    }
+
+
 Ковариантность - выходящие из банка могут быть не просто людьми, но и клиентами банка.
 Ковариантностью называется сохранение иерархии наследования исходных типов в производных типах в том же порядке.
  Так, если класс Cat наследуется от класса Animal, то естественно полагать, что перечисление IEnumerable<Cat> 
@@ -4885,7 +4943,9 @@ delegate T 				  Operation	  <T, K ,J>				  (K val, J value);
         public string MaxSpeed;//расширяем базовый функционалл класса Car
     }
 
-    delegate T MyDelegate<out T>(); //указывает на то что тут будет использоватсяя ковариантность
+    delegate T MyDelegate<out T>(); //указывает на то что тут будет использоватсяя ковариантность,
+    //позволяет возвращать из метода обьект тип которого является производным от типа возращаемого делегатом
+    //
     
     class Programm
     {
