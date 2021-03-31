@@ -478,8 +478,8 @@ null Строки
 
 Из-за того, что строки это ссылочный тип, их идентификаторы тоже могут быть равны null. 
 Мы часто хотим защитить свою программу от ошибок, связанных с null-строками. Это можно сделать
- с помощью методов IsNullOrEmpty(возвращает trye если string пуста или string == null) 
- или string.IsNullOrWhiteSpace(string)(возвращает trye если string пуста или string == null или string == "\t" или 
+ с помощью методов IsNullOrEmpty(возвращает true если string пуста или string == null) 
+ или string.IsNullOrWhiteSpace(string)(возвращает true если string пуста или string == null или string == "\t" или 
  string == " " те строка ). 
  Также можно просто проверить строку на равенство литералу null. 
  Достоинство этого метода в том, что она работает быстрее, если не требуется проверка на длину строки.
@@ -5378,6 +5378,197 @@ public partial class Person//частичный класс
 Для этого они определяются с ключевым словом partial.
 ==========================================
 
+<--WPF-->
+------------------------------------------
+--xalm
+
+язык для описания дизайна фпа приложения
+
+--события WPF
+------------------------------------------
+WPF в отличие от других технологий, например, от Windows Forms, предлагает новую концепцию событий - маршрутизированные события (routed events).
+
+Для элементов управления в WPF определено большое количество событий, которые условно можно разделить на несколько групп:
+
+События клавиатуры
+
+События мыши
+
+События стилуса
+
+События сенсорного экрана/мультитач
+
+События жизненного цикла
+
+Подключить обработчики событий можно декларативно в файле xaml-кода,:
+<Button x:Name="Button1" Content="Click" Click="Button_Click" />
+
+а можно и в самом коде используя например такой вот перебор всех кнопок в сетке MainRoot
+
+ public MainWindow()
+        {
+            InitializeComponent();
+            foreach (UIElement elem in MainRoot.Children)//через UIElement мы перебираем все обьекты
+                //которые находятся в нашей сетке MainRoot.Children обьекты оотносящиеся
+                //к нашему Grid x:Name="MainRoot"
+            {
+                if (elem is Button)//теперь нужно прверить относится ли дочерний обьект к классу Button
+                {
+                    ((Button) elem).Click += Button_Click;//тк Button это производный класс от класса 
+                    //UIElement необходимо произвести явное приведение (downcast), да
+                }
+            }
+          
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Hi from Button_Click");
+        }
+
+Все маршрутизируемые события используют класс RoutedEventArgs (или его наследников), который представляет доступ к следующим свойствам:
+Source: элемент логического дерева, являющийся источником события.
+OriginalSource: элемент визуального дерева, являющийся источником события. Обычно то же самое, что и Source
+RoutedEvent: представляет имя события
+Handled: если это свойство установлено в True, событие не будет подниматься и опускаться, а ограничится непосредственным источником.
+
+------------------------------------------
+в отличии от win form здесь мы использумем вот такой способ добычи элесентов из формы или сетки
+ public MainWindow()
+        {
+            InitializeComponent();
+            foreach (UIElement elem in MainRoot.Children) //через UIElement мы перебираем все обьекты
+                //которые находятся в нашей сетке MainRoot.Children обьекты оотносящиеся
+                //к нашему Grid x:Name="MainRoot"
+            {
+                if (elem is Button btn) //теперь нужно прверить относится ли дочерний обьект к классу Button
+                {
+                    btn.Click += Button_Click; //тк Button это производный класс от класса 
+                    //UIElement необходимо произвести явное приведение (downcast), да
+                }
+            }
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) //Все маршрутизируемые события используют класс
+            //RoutedEventArgs (или его наследников), который представляет доступ к следующим свойствам:
+
+            //Source: элемент логического дерева, являющийся источником события.
+
+            //OriginalSource: элемент визуального дерева, являющийся источником события. Обычно то же самое, что и Source
+            //OriginalSource У элемента управления могут быть другие элементы управления в качестве дочерних элементов. 
+            //Когда вы подписываетесь на событие от элемента управления, родительский элемент, на который вы подписались,
+            //скорее всего, будет тем, что, e.Source однако, если у элемента управления есть дочерние элементы,
+            //а дочерний элемент - тот, который вызвал событие, то это OriginalSourceбудет дочерний элемент,
+            //который вызвал событие.
+
+            //RoutedEvent: представляет имя события
+
+            //Handled: если это свойство установлено в True, событие не будет подниматься и опускаться, а ограничится непосредственным источником.
+        {
+
+получение данных из элементов реализовано так
+            string str =
+                ((Button) e.OriginalSource).Content.ToString(); // преборазовываем инвент к классу кнопки, и получаем
+            //значение контента из кнопки <Button>1</Button> - 1 это и естть контент этой кнопки, и преобразуем его в строку
+
+            if (temp == "=")
+            {
+                ss = true;
+            }
+
+            if (ss)
+            {
+                if (temp != "+" || temp != "-" || temp != "/" || temp != "*" || temp != "=")
+                {
+                    textLabel.Text = String.Empty;
+                    temp = "";
+                }
+            }
+
+            if (str == "AC")
+            {
+                textLabel.Text = String.Empty;
+            }
+            else if (str == "=")
+            {
+здесь используется сложение чисел строки
+                string value = new DataTable().Compute(textLabel.Text, null)
+                    .ToString(); //Compute повзволят нам выситвать значение праметра в качетве входного 
+                //значения можно испольовать строку
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    textLabel.Text = value;
+                }
+
+
+            }
+
+            else
+            {
+                textLabel.Text += str;
+                temp = str;
+            }
+
+
+        }
+
+        string temp;
+        private bool ss = false;
+    }
+}
+
+------------------------------------------
+пример работы с xaml
+
+    <Grid x:Name="MainRoot" Background="White">
+        <!--grid здесь это основноая сетка, x:Name="" тут мы указываем название 
+        через которое сможем в дальейшем обращатся к этому элеменрту и вытащит 
+        из него все конпки и тд, Background отвечает за цвет фона-->
+        <Grid.RowDefinitions>
+            <!--создаем конструктор рядов -->
+            <RowDefinition />
+            <!--создаем 5 рядов -->
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <!--создаем конструктор столбцов -->
+            <ColumnDefinition/>
+            <!--создаем 4 стлбцов -->
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="" Grid.ColumnSpan="4" x:Name="textLabel" FontSize="48" FontFamily="Arial" Background="#FF999999" TextAlignment="Left" FontStretch="Normal" FontStyle="Normal" FontWeight="Normal" TextWrapping="NoWrap"/>
+        <!--создаем тектовое поле в полях Grid.Row="0" Grid.Column="0" те в  адрес в ряде и в столбце соответсвенно 
+        те верхний правый, Grid.ColumnSpan="4 обьединяем 4 столбца(Grid.RowSpan="4" так бы мы обьеденили 4 ряда)-->
+        <Button x:Name="button1" Grid.Column="0" Grid.Row="1" Background="#FF191B17" Foreground="White" FontSize="16" FontFamily="Arial" >1</Button>
+        <!--Background="#FF191B17" цвет кнопки, Foreground цвет текста, 1 это текст кнопки который будет отображатсня на ней, Grid.Column="0" Grid.Row="1" как уже показано 
+        -->
+        <Button x:Name="button2" Grid.Column="1" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">2</Button>
+        <Button x:Name="button3" Grid.Column="2" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">3</Button>
+        <Button x:Name="button4" Grid.Column="0" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">4</Button>
+        <Button x:Name="button5" Grid.Column="1" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">5</Button>
+        <Button x:Name="button6" Grid.Column="2" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">6</Button>
+        <Button x:Name="button7" Grid.Column="0" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">7</Button>
+        <Button x:Name="button8" Grid.Column="1" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">8</Button>
+        <Button x:Name="button9" Grid.Column="2" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">9</Button>
+        <Button x:Name="button0" Grid.Column="0" Grid.Row="4" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">0</Button>
+
+        <Button x:Name="buttonAdd" Grid.Column="4" Grid.Row="1" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">+</Button>
+        <Button x:Name="buttonSubtraction" Grid.Column="4" Grid.Row="2" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">-</Button>
+        <Button x:Name="buttonMultiply" Grid.Column="4" Grid.Row="3" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">*</Button>
+        <Button x:Name="buttonDivide" Grid.Column="4" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">/</Button>
+        <Button x:Name="buttonEqually" Grid.Column="1" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White" >=</Button>
+        <Button x:Name="buttonAC" Grid.Column="2" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">AC</Button>
+    </Grid>
+</Window>
+
+==========================================
 
 
 --Общая информация--
