@@ -4610,8 +4610,13 @@ await CommandToFormSupply("Output", "0"); программа дожидаетс�
 
 ------------------------------------------
 
+
+
  создание словаря с определенгными элементами из класса
 ------------------------------------------
+Type to = typeof(String);//дляклассов 
+Type t = ss.GetType();//для переменных
+
      private void DictionaryAdd()
         {
           
@@ -5432,6 +5437,57 @@ OriginalSource: элемент визуального дерева, являющ
 RoutedEvent: представляет имя события
 Handled: если это свойство установлено в True, событие не будет подниматься и опускаться, а ограничится непосредственным источником.
 
+
+------------------------------------------
+пример работы с xaml
+
+    <Grid x:Name="MainRoot" Background="White">
+        <!--grid здесь это основноая сетка, x:Name="" тут мы указываем название 
+        через которое сможем в дальейшем обращатся к этому элеменрту и вытащит 
+        из него все конпки и тд, Background отвечает за цвет фона-->
+        <Grid.RowDefinitions>
+            <!--создаем конструктор рядов -->
+            <RowDefinition />
+            <!--создаем 5 рядов -->
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <!--создаем конструктор столбцов -->
+            <ColumnDefinition/>
+            <!--создаем 4 стлбцов -->
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="" Grid.ColumnSpan="4" x:Name="textLabel" FontSize="48" FontFamily="Arial" Background="#FF999999" TextAlignment="Left" FontStretch="Normal" FontStyle="Normal" FontWeight="Normal" TextWrapping="NoWrap"/>
+        <!--создаем тектовое поле в полях Grid.Row="0" Grid.Column="0" те в  адрес в ряде и в столбце соответсвенно 
+        те верхний правый, Grid.ColumnSpan="4 обьединяем 4 столбца(Grid.RowSpan="4" так бы мы обьеденили 4 ряда)-->
+        <Button x:Name="button1" Grid.Column="0" Grid.Row="1" Background="#FF191B17" Foreground="White" FontSize="16" FontFamily="Arial" >1</Button>
+        <!--Background="#FF191B17" цвет кнопки, Foreground цвет текста, 1 это текст кнопки который будет отображатсня на ней, Grid.Column="0" Grid.Row="1" как уже показано 
+        -->
+        <Button x:Name="button2" Grid.Column="1" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">2</Button>
+        <Button x:Name="button3" Grid.Column="2" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">3</Button>
+        <Button x:Name="button4" Grid.Column="0" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">4</Button>
+        <Button x:Name="button5" Grid.Column="1" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">5</Button>
+        <Button x:Name="button6" Grid.Column="2" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">6</Button>
+        <Button x:Name="button7" Grid.Column="0" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">7</Button>
+        <Button x:Name="button8" Grid.Column="1" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">8</Button>
+        <Button x:Name="button9" Grid.Column="2" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">9</Button>
+        <Button x:Name="button0" Grid.Column="0" Grid.Row="4" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">0</Button>
+
+        <Button x:Name="buttonAdd" Grid.Column="4" Grid.Row="1" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">+</Button>
+        <Button x:Name="buttonSubtraction" Grid.Column="4" Grid.Row="2" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">-</Button>
+        <Button x:Name="buttonMultiply" Grid.Column="4" Grid.Row="3" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">*</Button>
+        <Button x:Name="buttonDivide" Grid.Column="4" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">/</Button>
+        <Button x:Name="buttonEqually" Grid.Column="1" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White" >=</Button>
+        <Button x:Name="buttonAC" Grid.Column="2" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">AC</Button>
+    </Grid>
+</Window>
+
 ------------------------------------------
 в отличии от win form здесь мы использумем вот такой способ добычи элесентов из формы или сетки
  public MainWindow()
@@ -5518,55 +5574,57 @@ Handled: если это свойство установлено в True, соб
     }
 }
 
+
 ------------------------------------------
-пример работы с xaml
+подключение внешник библилоттек порядок деействий:
+solutioon manager=> Project right click => mannagger NuGet=> выбратть интересующую библиотеку=> 
+а App.xalm нужно добавить чотто подобное 
 
-    <Grid x:Name="MainRoot" Background="White">
-        <!--grid здесь это основноая сетка, x:Name="" тут мы указываем название 
-        через которое сможем в дальейшем обращатся к этому элеменрту и вытащит 
-        из него все конпки и тд, Background отвечает за цвет фона-->
-        <Grid.RowDefinitions>
-            <!--создаем конструктор рядов -->
-            <RowDefinition />
-            <!--создаем 5 рядов -->
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <!--создаем конструктор столбцов -->
-            <ColumnDefinition/>
-            <!--создаем 4 стлбцов -->
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
+<Application.Resources>
+<ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries><!--при подключении библиотек через нуге нужно зайти на сайт производителя и добавитт оттуда код ресурсов вот сюда-->
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepPurple.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 
-        </Grid.ColumnDefinitions>
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="" Grid.ColumnSpan="4" x:Name="textLabel" FontSize="48" FontFamily="Arial" Background="#FF999999" TextAlignment="Left" FontStretch="Normal" FontStyle="Normal" FontWeight="Normal" TextWrapping="NoWrap"/>
-        <!--создаем тектовое поле в полях Grid.Row="0" Grid.Column="0" те в  адрес в ряде и в столбце соответсвенно 
-        те верхний правый, Grid.ColumnSpan="4 обьединяем 4 столбца(Grid.RowSpan="4" так бы мы обьеденили 4 ряда)-->
-        <Button x:Name="button1" Grid.Column="0" Grid.Row="1" Background="#FF191B17" Foreground="White" FontSize="16" FontFamily="Arial" >1</Button>
-        <!--Background="#FF191B17" цвет кнопки, Foreground цвет текста, 1 это текст кнопки который будет отображатсня на ней, Grid.Column="0" Grid.Row="1" как уже показано 
-        -->
-        <Button x:Name="button2" Grid.Column="1" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">2</Button>
-        <Button x:Name="button3" Grid.Column="2" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">3</Button>
-        <Button x:Name="button4" Grid.Column="0" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">4</Button>
-        <Button x:Name="button5" Grid.Column="1" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">5</Button>
-        <Button x:Name="button6" Grid.Column="2" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">6</Button>
-        <Button x:Name="button7" Grid.Column="0" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">7</Button>
-        <Button x:Name="button8" Grid.Column="1" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">8</Button>
-        <Button x:Name="button9" Grid.Column="2" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">9</Button>
-        <Button x:Name="button0" Grid.Column="0" Grid.Row="4" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">0</Button>
+    => в xalm файл разрабатываемого окна так же необходимо добавит ссылку не ресурсы xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 
-        <Button x:Name="buttonAdd" Grid.Column="4" Grid.Row="1" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">+</Button>
-        <Button x:Name="buttonSubtraction" Grid.Column="4" Grid.Row="2" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">-</Button>
-        <Button x:Name="buttonMultiply" Grid.Column="4" Grid.Row="3" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">*</Button>
-        <Button x:Name="buttonDivide" Grid.Column="4" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">/</Button>
-        <Button x:Name="buttonEqually" Grid.Column="1" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White" >=</Button>
-        <Button x:Name="buttonAC" Grid.Column="2" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">AC</Button>
+------------------------------------------ 
+создание 
+ <Grid x:Name="MainRoot" Background="#ffdadada">
+        <Border MinWidth="40" MaxWidth="550" Background="White" Margin="15"  VerticalAlignment="Center" Padding="30"  CornerRadius="20">
+        <!--создаем пллашку бордер, MinWidth и MaxWidth - минималльная и максималная ширина плашки (благодаря этому ширна будем менятся в зависомостти отт ширины окна),
+        Margin растояние между элементом и его сосденими элменетами(внешние отсутпы),Padding внутринние отступы()VerticalAlignment расположение плашки
+        по вертикали - в даном случае в центре,Padding устанавливает внутрение отступы - от внутреннего содержимого элемента до его границ,  -->
+        <Border.Effect><!--тут можно создавать эффекты для нашего бордера-->
+                <DropShadowEffect BlurRadius="30" Color="LightGray" ShadowDepth="1"/><!--создаем тень BlurRadius размер рассеивания теени,Color цвет тени 
+            ,ShadowDepth то насолькьок далеко тенб будет отставатьт от обьека кторый ее оттбрасывает-->
+        </Border.Effect>
+        <StackPanel>
+            <TextBlock Text="Hello Us" FontSize="30" FontWeight="Bold" Margin="0 0 0 20"></TextBlock>
+            <Grid Margin=" 0 0 0 0">
+                    <Button HorizontalAlignment ="Left" Content="Registration"/>
+                    <!--HorizontalAlignment означает располложение кнопки чтобы она прилегала к левой стороне Grid,-->
+                    <!-- эта записьь аналогична верхней (запись в Conttent аналогичен записи внутри тела обьектта)
+                    <Button HorizontalAlignment ="Left">Registration</Button>-->
+
+                    <Button HorizontalAlignment="Right" Content="Sign in" Style="{StaticResource MaterialDesignFlatButton}"/>
+                    <!--Style позволяет подключить внешшние стили, через StaticResource MaterialDesignFlatButton-->
+                </Grid>
+                <TextBox materialDesign:HintAssist.Hint="Enter login" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/><!--создание текстбокса с внешним материаал стилем-->
+                <PasswordBox materialDesign:HintAssist.Hint="Enter password" Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"/>
+                <PasswordBox materialDesign:HintAssist.Hint="Repeat password" Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"/><!--создание специплного текстбокса 
+            для паролейт с внешним материаал стилем-->
+                <TextBox materialDesign:HintAssist.Hint="Email" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/><!--создание текстбокса с внешним материаал стилем-->
+</StackPanel>
+        </Border>
+        
     </Grid>
-</Window>
+
 
 ==========================================
 
