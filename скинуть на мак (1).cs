@@ -4550,26 +4550,95 @@ public interface IRunAction : IAction   // ошибка IRunAction может б
 
 --Копирование объектов. Интерфейс ICloneable--
 ------------------------------------------
+
 Поскольку классы представляют ссылочные типы, то это накладывает некоторые ограничения на их использование. В частности
 
-class Program
-{
-    static void Main(string[] args)
-    {
-        Person p1 = new Person { Name="Tom", Age = 23 };
-        Person p2 = p1;
-        p2.Name = "Alice";
-        Console.WriteLine(p1.Name); // Alice
- 
-        Console.Read();
+        static void Main(string[] args)
+        {
+            Person p1 = new Person { Name = "Tom", Age = 23 };
+            Person p2 = p1;//p2.Name = "Tom" В данном случае объекты p1 и p2 будут указывать на один и тот же объект в памяти,
+                           //поэтому изменения свойств в переменной p2 затронут также и переменную p1.
+            p2.Name = "Alice";//как толлько имя запишется по ссылке в оьект р2 оно запишется так же и в обьект р1 тк у них сейчас один адрес
+            //чтобы этого избежать может исопльзоватся копирование оьектов ссылочного типа (с сохранением всех даннных первоначального обьекта)
+            Console.WriteLine(p1.Name); // Alice
+//неглубокое (поверхсностоне копировние)
+            SurfacePerson p3 = new SurfacePerson { Name = "Tom", Age = 23, Work = new Company { Name = "Microsoft" } };
+            SurfacePerson p4 = (SurfacePerson)p3.Clone();
+            p4.Work.Name = "Google";
+            p4.Name = "Alice";
+            Console.WriteLine(p3.Name); //здес MemberwiseClone СРАБОТАЛ тк name это простой тип -> Tom 
+            Console.WriteLine(p3.Work.Name); //здес MemberwiseClone НЕ сработал тк name это сложный тип -> Google - а должно быть Microsoft
+//глубоуоке копирование
+            DeepPerson p5 = new DeepPerson { Name = "Tom", Age = 23, Work = new Company { Name = "Microsoft" } };
+            DeepPerson p6 = (DeepPerson)p5.Clone();
+            p6.Work.Name = "Google";
+            p6.Name = "Alice";
+            Console.WriteLine(p5.Name); // Tom
+            Console.WriteLine(p5.Work.Name); //Microsoft
+
+            Console.Read();
+        }
     }
-}
- 
-class Person
-{
-    public string Name { get; set; }
-    public int Age { get; set; }
-}
+    
+    public interface ICloneable //Чтобы переменная p2 указывала на новый объект, но со значениями из p1, мы можем применить клонирование
+                                //с помощью реализации интерфейса ICloneable
+    {
+        object Clone();
+    }
+
+    class Person
+    {
+
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+//неглубокое копирование
+    class SurfacePerson : ICloneable//реализуем интерфейс 
+    {
+        
+        public string Name { get; set; }//Поверхностное копирование работает только для свойств, представляющих примитивные типы
+        public int Age { get; set; }
+
+        public Company Work { get; set; }//в случае если реализуетсся неглубокое копирвание В этом случае при копировании новая
+        //копия будет указывать на тот же объект Company
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();//добавляем специальный метод MemberwiseClone(), который возвращает копию объекта,
+                                          //но этот метод реализует неглубокое копирование 
+        }
+
+        
+    }
+//глубокое копирование
+    class DeepPerson : ICloneable//реализуем интерфейс 
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public Company Work { get; set; }
+
+        public object Clone()//пр использовании метода клон мы...
+        {
+            
+            Company company = new Company { Name = this.Work.Name };//...вмемсто использоваания метода MemberwiseClone мы при создании
+            //DeepPerson экземмпляраа создаем новый экземпляр сложного типа и копируем туда название поля из DeepPerson.Work...
+
+
+            return new DeepPerson
+            {//.. далее мы при создании экземмпляраа DeepPerson создаем новый экземпляр DeepPerson со СКОПИРИОВАНЫМИ туда значениями из
+                //этого экземпляра,далее в Work мы записываем КОПИЮ из первоначального экземпляра, чтобы потом ее эту КОПИЮ можно было
+                //поменят не за рагивая ОРИГИНАЛ
+                Name = this.Name,
+                Age = this.Age,
+                Work = company
+            };
+        }
+    }
+
+    class Company
+    {
+        public string Name { get; set; }
+    }
 
 ------------------------------------------
 использование клонирвания
@@ -5673,6 +5742,21 @@ int x = 5, y = 10, z = 12;    // инициализируем несколько
 
 
 
+==========================================
+
+
+
+sql базы данных
+------------------------------------------
+утановить через nuget пакет  system.data.sqlite в проект, скачать https://sqlitebrowser.org/ с сайта
+программу баз.
+
+НП хзапрещает создание пустых строк,ПК первычный ключ, АИ автоматически нумерует строки, У уникальное поле
+
+
+
+
+базы данных принято называть во мнножественном числе наприм. Users, Systems и тд
 ==========================================
 
 
