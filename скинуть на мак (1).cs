@@ -4550,6 +4550,15 @@ public interface IRunAction : IAction   // ошибка IRunAction может б
 
 --Копирование объектов. Интерфейс ICloneable--
 ------------------------------------------
+использование клонирвания
+
+Чтобы переменная p2 указывала на новый объект, но со значениями из p1,
+ мы можем применить клонирование с помощью реализации интерфейса ICloneable:
+
+public interface ICloneable
+{
+    object Clone();
+}
 
 Поскольку классы представляют ссылочные типы, то это накладывает некоторые ограничения на их использование. В частности
 
@@ -4640,19 +4649,176 @@ public interface IRunAction : IAction   // ошибка IRunAction может б
         public string Name { get; set; }
     }
 
+==========================================
+
+
+--IComparable сортировка обьектов и IComparer Применение компаратора--
 ------------------------------------------
-использование клонирвания
+IComparable сортировка обьектов 
+Большинство встроенных в .NET классов коллекций и массивы поддерживают сортировку.
+С помощью одного метода, который, как правило, называется в Sort() можно сразу отсортировать по возрастанию весь набор данных. Например:
 
-Чтобы переменная p2 указывала на новый объект, но со значениями из p1,
- мы можем применить клонирование с помощью реализации интерфейса ICloneable:
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            int[] numbers = new int[] {97, 45, 32, 65, 83, 23, 15};
+            Array.Sort(numbers); //для простых типов типа int или string существует метод сортировки по возрвастанию через Sort 
+            foreach (int n in numbers)
+                Console.WriteLine(n);
 
-public interface ICloneable
-{
-    object Clone();
+            Person p1 = new Person {Name = "Bill", Age = 34};
+            Person p2 = new Person {Name = "Tom", Age = 23};
+
+            Person p3 = new Person {Name = "Alice", Age = 21};
+            Person p4 = new Person {Name = "Max", Age = 21};
+            Person[] people = new Person[] {p1, p2, p4, p3};
+            Array.Sort(people); //здес будет исоплльзоваатсся CompareTo тк это сложный тип
+
+
+            foreach (Person p in people)
+            {
+                Console.WriteLine($"{p.Name} - {p.Age}");
+            }
+        }
+    }
+
+    //public interface IComparable //это являетсся устаревшим и нее используемым интерффейсом
+    //{
+    //    int CompareTo(object o);
+    //}
+
+    class
+        Person : IComparable<Person> //но для сложных типов это не сработает необходим интерфейс IComparable с обощением
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+
+        public int CompareTo(Person o) //онн имеет всего один метод CompareTo предназначен для сравнения текущего объекта Person с объектом,
+            //который передается в качестве параметра Person o. На выходе он возвращает целое число, которое может иметь одно из трех значений
+            //Меньше нуля. Значит, текущий объект должен находиться перед объектом, который передается в качестве параметра
+            //Равен нулю.Значит, оба объекта равны
+            //Больше нуля.Значит, текущий объект должен находиться после объекта, передаваемого в качестве параметра
+        {
+            return this.Age.CompareTo(o.Age); //производим сортировку по возрасту сравнивая возраст текущегго обьекта и обьекта который передается в качестве параметра
+            //какой куда передается зависит от алгоритмов сортировки
+            //далее если обьект который this < Person o то будет -1 и this должен находится до Person o,  this > Person o то будет 1 и this должен находится после Person o,
+            // this == Person o то будет 0 и this будет находится относително Person o соответвенно порядку в котором они были в первоначальном списке
+            // Person[] people = new Person[] {p1, p2, p4, p3}; те в данном случае спервма p4 а потом p3 тк их сравнение венет 0
+        }
+    }
 }
 
+------------------------------------------
+ IComparer Применение компаратора 
+
+Метод Compare предназначен для сравнения двух объектов o1 и o2. Он также возвращает три значения, в зависимости от результата сравнения: если первый объект больше 
+второго, то возвращается число больше 0, если меньше - то число меньше нуля; если оба объекта равны, возвращается ноль.
+
+class Program
+    {
+        static void Main(string[] args)
+        {
+          
+            Person p1 = new Person {Name = "Bill", Age = 34};
+            Person p2 = new Person {Name = "Tom", Age = 23};
+            Person p3 = new Person {Name = "Alice", Age = 21};
+            Person p4 = new Person {Name = "Maximmer", Age = 21};
+
+            Person[] people = new Person[] {p1, p2, p4, p3};
+
+            Person[] peopleLenght = new Person[] { p1, p2, p4, p3 };
+
+            Array.Sort(peopleLenght, new PeopleComparer());//Объект компаратора указывается в качестве второго параметра метода Array.Sort(). 
+            //При этом не важно, реализует ли класс Person интерфейс IComparable или нет. Правила сортировки, установленные компаратором, 
+            //будут иметь больший приоритет. В начале будут идти объекты Person, у которых имена меньше, а в конце - у которых имена длиннее:
+
+            foreach (Person p in peopleLenght)
+            {
+                Console.WriteLine($"{p.Name} - {p.Age}");
+            }
+        }
+    }
+
+   
+
+    class Person : IComparable<Person> 
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+
+        public int CompareTo(Person o)
+        {
+            return this.Age.CompareTo(o.Age); 
+        }
+    }
+
+    class PeopleComparer : IComparer<Person>//В данном случае используется обобщенная версия интерфейса IComparer, чтобы не делать излишних преобразований типов.
+    {
+        public int Compare(Person p1, Person p2)//Метод Compare предназначен для сравнения двух объектов o1 и o2. Он также возвращает три значения,
+            //в зависимости от результата сравнения: если первый объект больше второго, то возвращается число больше 0, если меньше
+            //- то число меньше нуля; если оба объекта равны, возвращается ноль.
+        {
+            if (p1.Name.Length > p2.Name.Length)//он сравнивает объекты в зависимости от длины строки - значения свойства Name 
+                return 1;
+            else if (p1.Name.Length < p2.Name.Length)
+                return -1;
+            else
+                return 0;
+        }
+    }
+}class Program
+    {
+        static void Main(string[] args)
+        {
+          
+            Person p1 = new Person {Name = "Bill", Age = 34};
+            Person p2 = new Person {Name = "Tom", Age = 23};
+            Person p3 = new Person {Name = "Alice", Age = 21};
+            Person p4 = new Person {Name = "Maximmer", Age = 21};
+            
+            Person[] peopleLenght = new Person[] { p1, p2, p4, p3 };
+
+            Array.Sort(peopleLenght, new PeopleComparer());
+
+            foreach (Person p in peopleLenght)
+            {
+                Console.WriteLine($"{p.Name} - {p.Age}");
+            }
+        }
+    }
+
+    class Person : IComparable<Person> 
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+
+        public int CompareTo(Person o)
+        {
+            return this.Age.CompareTo(o.Age); 
+        }
+    }
+
+    class PeopleComparer : IComparer<Person>//В данном случае используется обобщенная версия интерфейса IComparer, чтобы не делать излишних преобразований типов.
+    {
+        public int Compare(Person p1, Person p2)//Метод Compare предназначен для сравнения двух объектов o1 и o2. Он также возвращает три значения,
+            //в зависимости от результата сравнения: если первый объект больше второго, то возвращается число больше 0, если меньше
+            //- то число меньше нуля; если оба объекта равны, возвращается ноль.
+        {
+            if (p1.Name.Length > p2.Name.Length)//он сравнивает объекты в зависимости от длины строки - значения свойства Name
+            //если первый объект больше второго, то возвращается число больше 0, если меньше
+            //- то число меньше нуля; если оба объекта равны, возвращается ноль. 
+                return 1;
+            else if (p1.Name.Length < p2.Name.Length)
+                return -1;
+            else
+                return 0;
+        }
+    }
+}
 
 ==========================================
+
 
 
 --await timer--
@@ -5751,10 +5917,7 @@ sql базы данных
 утановить через nuget пакет  system.data.sqlite в проект, скачать https://sqlitebrowser.org/ с сайта
 программу баз.
 
-НП хзапрещает создание пустых строк,ПК первычный ключ, АИ автоматически нумерует строки, У уникальное поле
-
-
-
+НП хзапрещает создание пустых строк,ПК первычный ключ ключ который при удалении не удаляется , АИ автоматически нумерует строки, У уникальное поле
 
 базы данных принято называть во мнножественном числе наприм. Users, Systems и тд
 ==========================================
