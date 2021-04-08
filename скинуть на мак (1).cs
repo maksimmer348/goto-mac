@@ -1745,6 +1745,118 @@ else
     Console.WriteLine(emp.Company);
 }
 
+
+______________________________  
+class Person
+    {
+        public string Name { get; set; }
+
+        public Person(string name)
+        {
+            Name = name;
+        }
+
+        public virtual string Display() //методы и свойства, которые мы хотим сделать доступными для переопределения,
+            // в базовом классе помечается модификатором virtual. Такие методы и свойства называют виртуальными.
+        {
+            return Name;
+        }
+
+        public string SS()
+        {
+            return "SS in Person";
+        }
+    }
+
+    class Employee : Person
+    {
+        public string Company { get; set; }
+
+        public Employee(string name, string company) : base(name)
+        {
+            Company = company;
+        }
+
+        //методы можно перопрделть а можно оставлять как есть в этом случае объекты Employee будут использовать реализацию 
+        //метода Display из класса Person те из базового класса, те если мы УДАЛИМ отсюда метод Display, будет исопльзован 
+        //ОРИГИНАЛЬНЫЙ Display из класса Person
+        public override string Display() //А чтобы переопределить метод в классе-наследнике, этот метод определяется 
+            //с модификатором override. 
+
+            //Переопределенный метод в классе-наследнике должен иметь тот же набор параметров, что и виртуальный метод в базовом классе.
+        {
+            if (Name == "Tom")
+            {
+                Name = "Max";
+                return Name + $" {Company}";
+            }
+
+            return base.Display() + $" {Company}";
+        }
+
+        public string SS()
+        {
+            return "SS in Emplouee";
+        }
+    }
+
+    class EmployeeTwo : Employee
+    {
+        public int Age { get; set; }
+
+        public EmployeeTwo(string name, string company, int age) : base(name, company)
+        {
+            Age = age;
+        }
+
+        public override string Display() //Виртуальные методы базового класса определяют интерфейс всей иерархии, 
+            //то есть в любом производном классе, который не является прямым наследником от базового класса, можно 
+            //переопределить виртуальные методы.
+            //Например, мы можем определить класс Manager, который будет производным от Employee, и в нем также переопределить 
+            //метод Display.
+        {
+            return base.Display() + $" {Age}";
+        }
+
+
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Person p1 = new Person("Bill");
+            Console.WriteLine(p1.Display()); //Bill
+            // вызов метода Display из класса Perso
+            Employee p2 = new Employee("Tom", "Microsoft");
+            Console.WriteLine(p2.Display()); //Max Microsoft
+            // вызов метода Display из класса Person
+            if (p2 is Person p)
+            {
+                Console.WriteLine(p.Display()); //"Tom", "Microsoft" тк метод виртуальный то при апкасте будет
+                //исопльзоватся его верисия из класса потомка Employee p2
+                Console.WriteLine(p.SS()); //это обычный метод поэтому будет исполльзоватся из класса родителя Person p1
+            }
+
+
+            Person pers = p2;
+
+            Employee emp = (Employee) pers;
+
+
+            Person person = new Person("Tom");
+            //пытается преобразовать выражение к определенному типу в
+            // случае неудачного преобразования выражение будет содержать значение null 
+            EmployeeTwo p3 = new EmployeeTwo("Tommi", "Microsoftuuuss", 20);
+            Console.WriteLine(p3.Display()); //Tommi Microsoftuuuss 20
+
+            Console.ReadKey();
+        }
+    }
+
+
+
+
 ==========================================
 
 
@@ -1843,7 +1955,7 @@ static void Main(string[] args)
 ==========================================
 
 
---виртуальные (virtual) методы и свойства--
+--виртуальные b переопределенные (virtual, override) методы и свойства--
 ------------------------------------------
 виратуальный метод или свойства могу находится в обычном классе родителе, могут иметь свою функциональность,
 при этом могут быть (а могут и не быть, тогда их функционал будет просто использован из класса родителя)  
@@ -1854,7 +1966,8 @@ static void Main(string[] args)
 доп функциональность)
 
 модификатор доступа должен быть одинаковым
-
+------------------------------------------
+пример ипсользования вриитуальнных методов и апкаст(upcasting)
 class Person
 {
     public string Name { get; set; }
@@ -1867,6 +1980,11 @@ class Person
     {
         return Name;
     }
+
+     public string SS()
+        {
+            return "SS in Person";
+        }
 }
 class Employee : Person
 {
@@ -1891,6 +2009,10 @@ class Employee : Person
         }
         return base.Display() + $" {Company}";
     }
+    public string SS()
+        {
+            return "SS in Emplouee";
+        }
 }
 
 class EmployeeTwo : Employee
@@ -1921,6 +2043,13 @@ class Program
         Employee p2 = new Employee("Tom", "Microsoft");
         Console.WriteLine(p2.Display());//Max Microsoft
         // вызов метода Display из класса Person
+
+        if (p2 is Person p)//производим апкаст p1 = p2
+            {
+                Console.WriteLine(p.Display()); //"Tom", "Microsoft" тк метод виртуальный то при апкасте будет
+                //исопльзоватся его верисия из класса потомка p2
+                Console.WriteLine(p.SS()); //это обычный метод поэтому будет исполльзоватся из класса родителя p1
+            }
 
         EmployeeTwo p3 = new EmployeeTwo("Tommi", "Microsoftuuuss", 20);
         Console.WriteLine(p3.Display());//Tommi Microsoftuuuss 20
@@ -5915,6 +6044,19 @@ solutioon manager=> Project right click => mannagger NuGet=> выбратть и
 ==========================================
 
 
+sql базы данных
+------------------------------------------
+утановить через nuget пакет  system.data.sqlite в проект, скачать https://sqlitebrowser.org/ с сайта
+программу баз.
+
+
+
+НП хзапрещает создание пустых строк,ПК первычный ключ ключ который при удалении не удаляется , АИ автоматически нумерует строки, У уникальное поле
+
+базы данных принято называть во мнножественном числе наприм. Users, Systems и тд
+==========================================
+
+
 --Общая информация--
 
 ------------------------------------------
@@ -5960,20 +6102,6 @@ int x = 5, y = 10, z = 12;    // инициализируем несколько
 
 
 ==========================================
-
-
-
-sql базы данных
-------------------------------------------
-утановить через nuget пакет  system.data.sqlite в проект, скачать https://sqlitebrowser.org/ с сайта
-программу баз.
-
-НП хзапрещает создание пустых строк,ПК первычный ключ ключ который при удалении не удаляется , АИ автоматически нумерует строки, У уникальное поле
-
-базы данных принято называть во мнножественном числе наприм. Users, Systems и тд
-==========================================
-
-
 
 --Изучить позже--
 ------------------------------------------
