@@ -201,6 +201,79 @@ int i;//обьявление перменной
 
 ==========================================
 
+--Классы ссылки экземпляры--
+
+------------------------------------------ 
+поля или перменные класса определяют состояние класса, а методы поведение будущего обьекта
+
+       обьект (new) это сущность времени выполнения программы, он запрашивает область памяти под выполнение класса,
+        ссылка на обьект, облать в управляемой куче ктороая хранит в себе методы
+
+       экземпляр область в памяти кторая хранит в себе нестатические поля
+
+       ссылка - это первый байт в памяти из той области где начинается обьект или адрес в памяти первого байта блока 
+       загловка
+
+       задача конструктора без параметров(по муолчанию) проинициализировать все поля класса знаениями по мумолчанию
+
+сильная ссылка MyClass class = new MyClass() - имеется перменная солжерэащся в себе ссылку, по этой ссылке мы можем 
+обращатся к члену этого экземпляра/объекта class.Method()
+
+ слабая ссылка new MyClass().Method можно обратится к члену экземпляра но только один раз тк каждый раз при обращении
+ мы работаем с новым экземплярок класса MyClass
+
+ ComCommunication Meter = new ComCommunication(); это вызов конструктора
+------------------------------------------
+класс может иметь модификатор доступа private но если класс вложенный по отношению к другому классу.
+ А если класс определен в пространстве имен, то не может;
+
+namespace numbers
+{
+  private class one//недопустимо
+  {
+
+  }
+  class two
+  {
+    private class three//допустимо
+    {
+
+    }
+    private class five : four//допустимо
+    {
+
+    }
+  }
+  class four internal 
+  {
+
+  }
+}
+ 
+------------------------------------------
+так можно вызвать экземпляры класса без дополнительной функциональности
+ class Counter
+    {
+        public int Value;
+        public int Value2 { get; set; }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Counter c1 = new Counter { Value = 23, Value2 = 2};//это аналогично нижней констркции
+            c1.Value = 32;//ээто
+            c1.Value2 = 3;//и это аналогично верхней конструкции
+
+            Counter c2 = new Counter { Value = 45 };
+            c2.Value = 54;
+        }
+    }
+
+==========================================
+
+
 
 --Структуры--
 
@@ -1432,7 +1505,7 @@ static void Main(string[] args)
         }
         
 ------------------------------------------
-передача  метод кортежа ввиде свойства
+передача в метод кортежа ввиде свойства
 
 private static (string name, int age) GetTuple((string n, int a) tuple, int x)//создаем ворзващаемое значение ктореж из двух чисел с названиями полей кортежа
             //, а в аргумент записиываем еще один кортеж и число 
@@ -5360,6 +5433,124 @@ class Program
  подключить пространство имен метода через директиву using.
 ==========================================
 
+--Deconstruct--
+------------------------------------------
+C# не предоставляет встроенную поддержку для деконструкции типов, не являющихся кортежами, кроме типов record и DictionaryEntry. 
+Тем не менее, если вы являетесь создателем класса, структуры или интерфейса, вы можете разрешить деконструкцию экземпляров определенного типа, 
+реализовав один или несколько методов Deconstruct. 
+ 
+    class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; } 
+        public int Height { get; set; }
+
+        //public void Deconstruct(out string name)//метод Deconstruct должен принимать как минимум два выходных параметра, те так метод не сработает как надо
+
+        //{
+        //    name = this.Name;
+
+        //}
+
+        public void Deconstruct(out string name, out int age)//Метод возвращает "void", и каждое деконструируемое значение обозначается параметром out в сигнатуре метода.
+            //Например, следующий метод  Deconstruct класса Person возвращает name и age
+       
+        {
+            name = Name;
+            age = Age;
+        }
+
+        public void Deconstruct(out string name, out int age, out int height)//так же можно реализовывать пергрузки меоду деконструкт
+
+        {
+            name = Name;
+            age = Age;
+            height = Height;
+        }
+
+
+        public void Deconstruct1(out string name, out int age)//обычный метод который реализован в примере без исопльзования функционала Deconstruct
+        {
+            name = Name;
+            age = Age;
+        }
+
+    }
+
+    public static class Strings
+    {
+        public static void Deconstruct(this String str, out int length, out int getHashCode)//Если вы не являетесь создателем класса, структуры или интерфейса,
+            //вы все равно можете выполнять деконструкцию объектов этого типа, реализовав один или несколько Deconstruct методов расширения,
+            //которые будут возвращать интересующие вас значения.
+        {
+            length = str.Length;
+            getHashCode = str.GetHashCode();
+        }
+    }
+
+    public static class ReflectionExtensions
+    {
+        public static void Deconstruct(this PropertyInfo p, out bool isStatic,
+            out bool isReadOnly, out bool isIndexed,
+            out Type propertyType)
+        {
+            var getter = p.GetMethod;
+
+            // Is the property read-only?
+            isReadOnly = !p.CanWrite;
+
+            // Is the property instance or static?
+            isStatic = getter.IsStatic;
+
+            // Is the property indexed?
+            isIndexed = p.GetIndexParameters().Length > 0;
+
+            // Get the property type.
+            propertyType = p.PropertyType;
+        }
+    }
+        class Program
+    {
+        static void Main(string[] args)
+        {
+            Person person = new Person { Name = "Tom", Age = 33, Height = 180};
+
+            (string names, int ages) = person;// В этом случае мы могли бы выполнить декомпозицию объекта Person так
+            //создаем две перменные и через деконстурктор предаем в них значния по ссылке которые берем из полей класса Person - Name и Age  
+            //string names, int ages, int heights имена перменных необзательно дожны сопвадать с именами перменных в методе  Deconstruct(out string name, out int age, out int height)
+
+            Console.WriteLine(names);    // Tom
+            Console.WriteLine(ages);     // 33
+
+
+            var ( name1,  age1,  height) = person;//можно так же обьявить в начал var  и тогда все перенные в деконструкторе примут нужные типы в зависимости от типов в классе
+            Console.WriteLine(name1);    // Tom
+            Console.WriteLine(age1);     // 33
+            Console.WriteLine(height);    // 180
+
+            var (name2, _, height2) = person;//пустые переменные можно применять с пользовательскими типами, чтобы игнорировать определенные элементы, возвращаемые методом Deconstruct
+            Console.WriteLine(name2);    // Tom
+            Console.WriteLine(height2);    // 180
+
+            //этот код аналлгичен вышенаписаному но без исопльзования функционала Deconstruct
+            Person person2 = new Person { Name = "Max", Age = 20 };
+
+            string name3; 
+            int age3;
+            person.Deconstruct1(out name3, out age3);
+            Console.WriteLine(name3);    // Max
+            Console.WriteLine(age3);     // 20
+
+
+            String ss = "Hello";//можно например сделать так
+            (int length,int getHashCode) = ss;
+            Console.WriteLine(length);//длина строки 5
+            Console.WriteLine(getHashCode);//хешкод строки -1454575212
+        }
+}
+==========================================
+
+
 --await timer--
 ------------------------------------------
 await CommandToFormSupply("Output", "0"); программа дожидается выполнения и только потом перскакивает на следующий 
@@ -6065,77 +6256,7 @@ delegate void AccountHandler(string message);
 ==========================================
 
 
---Классы ссылки экземпляры--
 
------------------------------------------- 
-поля или перменные класса определяют состояние класса, а методы поведение будущего обьекта
-
-       обьект (new) это сущность времени выполнения программы, он запрашивает область памяти под выполнение класса,
-        ссылка на обьект, облать в управляемой куче ктороая хранит в себе методы
-
-       экземпляр область в памяти кторая хранит в себе нестатические поля
-
-       ссылка - это первый байт в памяти из той области где начинается обьект или адрес в памяти первого байта блока 
-       загловка
-
-       задача конструктора без параметров(по муолчанию) проинициализировать все поля класса знаениями по мумолчанию
-
-сильная ссылка MyClass class = new MyClass() - имеется перменная солжерэащся в себе ссылку, по этой ссылке мы можем 
-обращатся к члену этого экземпляра/объекта class.Method()
-
- слабая ссылка new MyClass().Method можно обратится к члену экземпляра но только один раз тк каждый раз при обращении
- мы работаем с новым экземплярок класса MyClass
-
- ComCommunication Meter = new ComCommunication(); это вызов конструктора
-------------------------------------------
-класс может иметь модификатор доступа private но если класс вложенный по отношению к другому классу.
- А если класс определен в пространстве имен, то не может;
-
-namespace numbers
-{
-	private class one//недопустимо
-	{
-
-	}
-	class two
-	{
-		private class three//допустимо
-		{
-
-		}
-		private class five : four//допустимо
-		{
-
-		}
-	}
-	class four internal 
-	{
-
-	}
-}
- 
-------------------------------------------
-так можно вызвать экземпляры класса без дополнительной функциональности
- class Counter
-    {
-        public int Value;
-        public int Value2 { get; set; }
-    }
-
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Counter c1 = new Counter { Value = 23, Value2 = 2};//это аналогично нижней констркции
-            c1.Value = 32;//ээто
-            c1.Value2 = 3;//и это аналогично верхней конструкции
-
-            Counter c2 = new Counter { Value = 45 };
-            c2.Value = 54;
-        }
-    }
-
-==========================================
 
 
 --Linq--
@@ -6655,6 +6776,9 @@ namespace ExperementNetCore
         }
     }
 }
+
+
+использование _  пустых переменных, в out и прочем.
 
 
 ==========================================
