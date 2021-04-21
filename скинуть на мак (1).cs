@@ -2936,6 +2936,14 @@ if (person.GetType() == typeof(Person))
     Console.WriteLine("Это реально класс Person");
 
 ------------------------------------------
+Equals(Object)  
+Определяет, равен ли указанный объект текущему объекту.
+
+Метод Equals принимает в качестве параметра объект любого типа, который мы затем приводим к текущему, 
+если они являются объектами одного класса. Затем сравниваем по именам. Если имена равны, возвращаем true, что будет говорить,
+ что объекты равны. Однако при необходимости реализацию метода можно сделать более сложной, например, сравнивать
+ по нескольким свойствам при их наличии.
+ 
 Метод Equals позволяет сравнить два объекта ПО ЗНАЧЕНИЮ а НЕ поссылке на равенство:
 
 class Person
@@ -2949,16 +2957,6 @@ class Person
         return (this.Name == person.Name);
     }
 }
-Метод Equals принимает в качестве параметра объект любого типа, который мы затем приводим к текущему, 
-если они являются объектами одного класса. Затем сравниваем по именам. Если имена равны, возвращаем true, что будет говорить,
- что объекты равны. Однако при необходимости реализацию метода можно сделать более сложной, например, сравнивать
- по нескольким свойствам при их наличии.
- ------------------------------------------
-Equals(переопределенный) принимает в качестве параметра объект любого типа, который мы затем приводим к текущему, 
-если они являются объектами одного класса.
- Затем сравниваем по именам. Если имена равны, возвращаем true, что будет говорить, что объекты равны. 
- Однако при необходимости реализацию метода можно сделать более сложной, например, 
- сравнивать по нескольким свойствам при их наличии.
 
 Person person1 = new Person { Name = "Tom" };
 Person person2 = new Person { Name = "Bob" };
@@ -2966,10 +2964,11 @@ Person person3 = new Person { Name = "Tom" };
 bool p1Ep2 = person1.Equals(person2);   // false
 bool p1Ep3 = person1.Equals(person3);   // true
 
+------------------------------------------
 Для типов значений == и Equals не имеет разницы, отличается ReferenceEquals, выдающий false, к примеру, для двух
- переменных типа int, равных 0 (потому, что сравнивает не значения, а ссылки). Для ссылочных типов эквивалентны 
- все три способа ==, Equals и ReferenceEquals,сравнивать значения аналогично типам значений возможно только с
- помощью переопределения, как и описано в примере
+ переменных типа int, равных 0 (потому, что сравнивает не значения, а ссылки). 
+Для ссылочных типов эквивалентны  все три способа ==, Equals и ReferenceEquals,
+сравнивать значения аналогично типам значений возможно только с помощью переопределения, как и описано в примере
 
  public class Money
 {
@@ -3010,6 +3009,147 @@ class Program
      Console.ReadLine();
    }
 }
+
+------------------------------------------
+ReferenceEquals сравниаает обьект не по занчению а по ссылке 
+namespace TestReferenceEquality
+    {
+        struct TestStruct
+        {
+            public int Num { get; private set; }
+            public string Name { get; private set; }
+
+            public TestStruct(int i, string s) : this()
+            {
+                Num = i;
+                Name = s;
+            }
+        }
+
+        class TestClass
+        {
+            public int Num { get; set; }
+            public string Name { get; set; }
+        }
+
+      
+        class Program
+        {
+            static void Main()
+            {
+                // Demonstrate reference equality with reference types.
+                #region ReferenceTypes
+
+                // Создаем два экземпляра ссылочного типа с одинаковыми значениями.
+                TestClass tcA = new TestClass() { Num = 1, Name = "New TestClass" };
+                TestClass tcB = new TestClass() { Num = 1, Name = "New TestClass" };
+
+                Console.WriteLine("ReferenceEquals(tcA, tcB) = {0}",
+                                    Object.ReferenceEquals(tcA, tcB)); // false
+
+                //  После присвоения tcB и tcA ссылаются на один и тот же объект.
+                // Теперь у них есть ссылочное равенство.
+                tcB = tcA;
+                Console.WriteLine("After assignment: ReferenceEquals(tcA, tcB) = {0}",
+                                    Object.ReferenceEquals(tcA, tcB)); // true
+
+                // Изменения, внесенные в tcA, отражаются в tcB. Следовательно, объекты
+                // которые имеют ссылочное равенство, также имеют равенство значений.
+                tcA.Num = 42;
+                tcA.Name = "TestClass 42";
+                Console.WriteLine("tcB.Name = {0} tcB.Num: {1}", tcB.Name, tcB.Num);
+                #endregion
+
+                // Демонстрация того, что два экземпляра типа значения никогда не имеют ссылочного равенства.
+                #region ValueTypes
+
+                TestStruct tsC = new TestStruct(1, "TestStruct 1");
+
+                // Типы значений копируются при присвоении. ЦД и ЦЦ имеют
+                // одинаковые значения, но не один и тот же объект.
+                TestStruct tsD = tsC;
+                Console.WriteLine("After assignment: ReferenceEquals(tsC, tsD) = {0}",
+                                    Object.ReferenceEquals(tsC, tsD)); // false
+                #endregion
+
+                #region stringRefEquality
+                // Постоянные строки в одной сборке всегда интернируются средой выполнения.
+                // Это означает, что они хранятся в одном месте в памяти. Следовательно,
+                // две строки имеют ссылочное равенство, хотя присваивание не происходит.
+                string strA = "Hello world!";
+                string strB = "Hello world!";
+                Console.WriteLine("ReferenceEquals(strA, strB) = {0}",
+                                 Object.ReferenceEquals(strA, strB)); // true
+
+                // After a new string is assigned to strA, strA and strB
+                // are no longer interned and no longer have reference equality.
+                strA = "Goodbye world!";
+                Console.WriteLine("strA = \"{0}\" strB = \"{1}\"", strA, strB);
+
+                Console.WriteLine("After strA changes, ReferenceEquals(strA, strB) = {0}",
+                                Object.ReferenceEquals(strA, strB)); // false
+
+                // После присвоения новой строки strA, strA и strB
+                // больше не интернированы и больше не имеют ссылочного равенства.
+                StringBuilder sb = new StringBuilder("Hello world!");
+                string stringC = sb.ToString();
+                // False:
+                Console.WriteLine("ReferenceEquals(stringC, strB) = {0}",
+                                Object.ReferenceEquals(stringC, strB));
+
+                // Строка, созданная во время выполнения, не может быть интернирована.
+                Console.WriteLine("stringC == strB = {0}", stringC == strB); //по значению строки ранны true
+                Console.WriteLine("ReferenceEquals(stringC, strB) = {0}",
+                    Object.ReferenceEquals(stringC, strB));//false строка не может быть инетрнироваа 
+                //и потому по ссылке не совпадает 
+                Console.WriteLine("ReferenceEquals(stringC, strB) = {0}",
+                    Object.Equals(stringC, strB));//false строка не может быть инетрнироваа 
+                //и потому по ссылке не совпадает 
+                #endregion
+
+                // Keep the console open in debug mode.
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+            }
+        }
+    }
+------------------------------------------
+сравнение списков по муолчанию (именно содержимого а не ссылок)ListName1.SequenceEqual(ListName2);
+
+public static bool SequenceEqual<T>( 
+       this IEnumerable<T> first, 
+       IEnumerable<T> second);
+Эта операция перечисляет каждую входную последовательность параллельно, сравнивая элементы с помощью метода
+ System.Object.Equals. Если элементы эквивалентны, и последовательности содержат одинаковое количество элементов, 
+ операция возвращает true. Иначе она возвращает false.
+
+*List, *сравнение *IEqualityComparer *Linq *SequenceEqual
+static void Main(string[] args)
+        {
+            string[] strArr1 = {"0012", "130", "0000019", "4"};
+            string[] strArr2 = {"12", "0130", "019", "0004"};
+            
+            bool eq = strArr1.SequenceEqual(strArr2, new MyStringifiedNumberComparer());//используем наш класс в качесвте опции сравнения
+
+            Console.WriteLine(eq);
+        }
+
+        public class MyStringifiedNumberComparer : IEqualityComparer<string>//в генерик пишем знаение кторое идет в сравниаемых обьектах
+        {
+            public bool Equals(string x, string y)//переопределяем метод Equals взятый из IEqualityComparer
+            {
+                return (Int32.Parse(x) == Int32.Parse(y));//очищаем от лишних 00 впрееди наши строки преобразовоывая из в int 
+                //тк 0012 нитов не бывает есть тольо 12 и тд
+            }
+
+            public int GetHashCode(string obj)//это необходимо для того чтобы сравнивать хеши обьектов те например хеш инта
+                                              //12 и еще одного инта 12 будут равны
+            {
+                return Int32.Parse(obj).ToString().GetHashCode();
+            }
+
+        }
+
 ==========================================
 
 --generics обобщения (--упаковка распкаовка boxing unboxing--)--
@@ -3024,16 +3164,17 @@ class Program
 
     Account acc1 = new Account();
     Account acc2 = new Account();
-            
+
             //упкаовка и распкаовка ведут к снижению производительностьи и нарушению безопасности типа если
             // обьекты изменяются извне и мы можем не знать какие значения хранятся в этом обьекте если не те
             //к торым мы распаковываем происходит System.InvalidCastException
 
+            //упаковка значнимый тип превращется в ссылочный, распокаовка это обратный процесс
             acc1.Id = 45;// происходит упаковка boxing, int упакаютеся в тип object
             int intID = (int)acc1.Id;//обратный процесс распокавка unboxing
 
             string intID = (string)acc1.Id;//выдаст ошибку изза нессотвтествия типов
-
+            //упаковка значнимый тип превращется в ссылочный, распокаовка это обратный процесс
             acc2.Id = "55";// происходит упаковка boxing, int упакаютеся в тип object
             string str = (string)acc2.Id;//обратный процесс распокавка unboxing
 
@@ -5639,6 +5780,38 @@ private static async Task ExecuteAsyncMethods()
 //       Exiting after 5 second delay
 
 ==========================================
+
+--Интерфейсы IEnumerable и IEnumerator--
+------------------------------------------
+Как мы увидели, основной для большинства коллекций является реализация интерфейсов IEnumerable и IEnumerator.
+ Благодаря такой реализации мы можем перебирать объекты в цикле foreach:
+
+ foreach(var item in перечислимый_объект)
+{
+     
+}
+
+------------------------------------------
+Интерфейс IEnumerable имеет метод, возвращающий ссылку на другой интерфейс - перечислитель:
+
+public interface IEnumerable
+{
+    IEnumerator GetEnumerator();//А интерфейс IEnumerator определяет функционал для перебора внутренних объектов в контейнере:
+}
+
+public interface IEnumerator
+    {
+        bool MoveNext(); //Метод MoveNext() перемещает указатель на текущий элемент на следующую позицию в последовательности.
+        //Если последовательность еще не закончилась, то возвращает true. Если же последовательность закончилась, то возвращается false.
+        object Current { get; }  // текущий элемент в контейнере (объект в последовательности, на который указывает указатель)
+        void Reset(); // перемещение в начало контейнера  (сбрасывает указатель позиции в начальное положение.)
+    }
+
+Каким именно образом будет осуществляться перемещение указателя и получение элементов зависит от реализации интерфейса.
+ В различных реализациях логика может быть построена различным образом.
+
+==========================================
+
 --await timer--
 ------------------------------------------
 await CommandToFormSupply("Output", "0"); программа дожидается выполнения и только потом перскакивает на следующий 
@@ -6342,10 +6515,18 @@ delegate void AccountHandler(string message);
     }
 
 ==========================================
+--String.Intern--
+ ------------------------------------------
+==========================================
+
+--StringBuilder--
+------------------------------------------
+Хотя класс System.String предоставляет нам широкую функциональность по работе со строками, все таки он имеет свои недостатки. 
+Прежде всего, объект String представляет собой НЕИЗМЕНЯЕМУЮ строку
 
 
 
-
+==========================================
 
 --Linq--
 
