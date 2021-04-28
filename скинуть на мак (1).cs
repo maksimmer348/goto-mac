@@ -698,6 +698,24 @@ using static System.Console;
 
 --свойства get set свойства--
 ------------------------------------------
+причин рассматривать использование сыойст помимо аргумента инкапсуляции и облегчения будущих изменений.
+Инкапсуляция поведения, связанного с получением или настройкой свойства, - это позволяет добавить дополнительную функциональность (например, проверку) позже.
+
+Скрытие внутреннего представления свойства при экспонировании свойства с использованием альтернативного представления.
+
+Изоляция вашего открытого интерфейса от изменения - позволяя публичному интерфейсу оставаться постоянным, а реализация меняется, не затрагивая существующих потребителей.
+
+Управление семантикой объекта управления временем жизни и памяти (удаление) - особенно важно в средах с неконтролируемой памятью (например, С++ или Objective-C).
+
+Предоставление точки перехвата отладки при изменении свойства во время выполнения - отладка, когда и где свойство, измененное на конкретное значение, может быть довольно сложно без этого на некоторых языках.
+
+Взаимодействие с библиотеками, которые предназначены для работы с атрибутами getter/seters - Mocking, Serialization и WPF, приходят на ум.
+
+Предоставление наследникам возможности изменять семантику поведения объекта и подвергается переопределению методов getter/setter.
+
+Разрешить использование getter/setter в качестве лямбда-выражений, а не значений.
+
+Getters и seters могут разрешать разные уровни доступа - например, get может быть общедоступным, но набор может быть защищен.
 
         private int x;
 
@@ -6857,7 +6875,99 @@ sql базы данных
 
 ==========================================
 
+--EEPlus--
+------------------------------------------
 
+
+namespace ExcelTable
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private ExcelReport exRep;
+        public MainWindow()
+        {
+            InitializeComponent();
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+        }
+
+        private void Report()
+        {
+            var reporter = new ExcelReporter().GetReport();
+            var crtTable = new CreateExcelTable().Generate(reporter);
+            
+            File.WriteAllBytes("Report.xlsx",crtTable);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Report();
+        }
+    }
+
+    public class ExcelReport
+    {
+        public OwerLoad Load;
+        public OwerLoadSpecifications[] OwerSpecifications;
+    }
+   
+    public class ExcelReporter
+    {
+        
+        public ExcelReport GetReport()
+        {
+            return new ExcelReport
+            {
+                Load = new OwerLoad
+                {
+
+                    Name = "OwerLoad ZZ",
+                    Height = 50.14
+                },
+                OwerSpecifications = new[]
+                {
+                    new OwerLoadSpecifications
+                        {SerialNumber = "FGGF20", Power = 50.1, Date = new DateTime(2021, 10, 2)},
+                    new OwerLoadSpecifications {SerialNumber = "FGGF20", Power = 50.1, Date = new DateTime(2021, 10, 2)}
+                }
+            };
+        }
+    }
+
+    public class OwerLoad
+    {
+        public string Name { get; set; }
+        public double Height { get; set; }
+    }
+
+    public class OwerLoadSpecifications
+    {
+        public string SerialNumber;
+        public Double Power { get; set; }
+        public DateTime Date { get; set; }
+    }
+
+    public class CreateExcelTable
+    {
+        public byte[] Generate(ExcelReport report)
+        {
+            var pack = new ExcelPackage();
+            var sheet = pack.Workbook.Worksheets.Add("Load Report");
+            sheet.Cells["B2"].Value = "Load:";
+            sheet.Cells[2, 3].Value = report.Load.Name;
+            sheet.Cells["B3"].Value = "Other:";
+            sheet.Cells["C3"].Value = $"{report.Load.Height}";
+            pack.Workbook.Protection.LockStructure = true;
+            pack.Workbook.Protection.SetPassword("password");
+            return pack.GetAsByteArray();
+        }
+    }
+}
+
+==========================================
 --Общая информация--
 
 ------------------------------------------
