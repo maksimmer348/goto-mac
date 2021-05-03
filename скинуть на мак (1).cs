@@ -6858,20 +6858,100 @@ solutioon manager=> Project right click => mannagger NuGet=> выбратть и
 
 sql базы данных
 ------------------------------------------
+НП хзапрещает создание пустых строк,ПК первычный ключ ключ который при удалении не удаляется , АИ автоматически нумерует строки, У уникальное поле
+
+базы данных принято называть во мнножественном числе наприм. Users, Systems и тд
+
 утановить через nuget пакет  system.data.sqlite в проект, скачать https://sqlitebrowser.org/ с сайта
 программу баз.
 ------------------------------------------
 или ииспользоватьт Entity Framework Core 
 добавить в проект пакет Entity Framework Core, using Microsoft.EntityFrameworkCore;
 
+Для взаимодействия с базой данных для контекста данных должна быть определена конфигурация подключения. Для ее установки можно применять  способ
+
+  public class ApplicationContext : DbContext
+    {
+        //представляет набор сущностей, хранящихся в базе данных
+        public DbSet<User> Users { get; set; }
+
+        //Переопределение у класса контекста данных метода
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+            => options.UseSqlite(@"Data Source=C:\Users\specadmin\source\repos\ExcelParser\ExcelParser\Users.db");//В этот метод передается объект DbContextOptionsBuilder,
+            // который позволяет создать параметры подключения. Для их создания вызывается метод UseSqlServer, в который передается строка подключения.
+            
+    }
+
+ 
+
+создадим класс кторый мы будем предавать в базу данных
+ public class User 
+    {
+        public int id { get; set; }
+
+        public string login { get; set; }
+        public string password { get; set; }
+        public string email { get; set; }
+
+        public User()
+        {
+
+        }
+
+        public User(string login, string password, string email)
+        {
+            this.login = login;
+            this.password = password;
+            this.email = email;
+        }
+    }
 
 
+private ApplicationContext db;//перменная для ипсолзования баз данных
+        public MainWindow()
+        {
+            InitializeComponent();
 
+            db = new ApplicationContext();//в конструкторе главного окна вызовем экземпляр баз данных 
 
-НП хзапрещает создание пустых строк,ПК первычный ключ ключ который при удалении не удаляется , АИ автоматически нумерует строки, У уникальное поле
+        }
 
-базы данных принято называть во мнножественном числе наприм. Users, Systems и тд
+private void Button_Reg_Click(object sender, RoutedEventArgs e)//для примера оздааим несолкько полей в котороые мы запишем 
+//значения кторый пойдут в нашу базу данных 
+      {
+          string login = loginTextBox.Text.Trim();//возмем их из ткстовых полей
+          string pass = passTextBox.Password.Trim();
+          string passRepeat = passRepeatTextBox.Password.Trim();
+          string email = EmailTextBox.Text.ToLower().Trim();
 
+db.Add(new User(login, pass, email) );//создадим базу данных с новым жкеземпляром класса и добавим туда значнея из тектовых полей
+                db.SaveChanges();//сохраним изменения
+
+      }
+
+private void Delete_account(object sender, RoutedEventArgs e)
+    {
+        var users = db.Users.OrderBy(b => b.id).First();//выберем первый элемент из списка базы данных
+        db.Remove(users);//удалим первый эземпляр из базы даных
+        db.SaveChanges();//сохарним изменения
+   
+private void View_accounts_Click(object sender, RoutedEventArgs e)
+{
+    var users = db.Users.OrderBy(b => b.id);//выберем первый элемент из списка базы данных
+    foreach (var user in users)
+    {
+        Debug.WriteLine($"{user.id} {user.login} {user.password} {user.email}");//выведем на коносль элемент из списка базы данных
+    }
+    db.SaveChanges();//
+}
+    
+private void Update_Account_Click(object sender, RoutedEventArgs e)
+{
+    var users = db.Users.OrderBy(b => b.id).ToList();
+    users[0].email = "KEKE@ya.ru";
+    users[0].login = "KESHAS";
+    db.SaveChanges();
+}
 
 ==========================================
 
