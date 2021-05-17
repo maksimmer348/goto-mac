@@ -6692,6 +6692,14 @@ OriginalSource: элемент визуального дерева, являющ
 RoutedEvent: представляет имя события
 Handled: если это свойство установлено в True, событие не будет подниматься и опускаться, а ограничится непосредственным источником.
 
+опции окон wpf
+------------------------------------------
+
+   AddNewBDWindow newBdWindow = new AddNewBDWindow();//вызываем экземпляр окна с которым буде работать
+            newBdWindow.Owner = Application.Current.MainWindow;//определяем его как главное окно приложения
+            newBdWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;//выводим окно по центру экрана
+            newBdWindow.ShowDialog();//пока окно открыто мыы не можем перейти на коно его вызвавшее
+
 
 ------------------------------------------
 пример работы с xaml
@@ -6954,6 +6962,7 @@ sql базы данных
         }
     }
 
+==
 
 private ApplicationContext db;//перменная для ипсолзования баз данных
         public MainWindow()
