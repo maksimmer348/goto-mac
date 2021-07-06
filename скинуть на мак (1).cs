@@ -7034,6 +7034,59 @@ EmpType emp = EmpType.Contractor;
 Console.WriteLine("{0} = {1}", emp.ToString() , (byte)emp);// Выводит строку "Contractor = 100". 
 ==========================================
 
+--Queue
+------------------------------------------
+Представляет коллекцию объектов, основанную на принципе «первым поступил — первым обслужен».
+
+
+
+  //Очереди и стеки полезны, если для хранения данных требуется временное хранилище.
+        //то есть, когда может потребоваться отменить элемент после получения его значения.
+        //Используйте, Queue Если необходимо получить доступ к данным в том же порядке,
+        //в котором они хранятся в коллекции. 
+        static void Main(string[] args)
+        {
+            Queue my = new Queue();
+
+            //Enqueue Добавляет элемент в конец Queue 
+            my.Enqueue("Hello");
+            my.Enqueue("World");
+            my.Enqueue("!");
+
+            //возвращает ковло элементов хранащихся в списке
+            Console.WriteLine(my.Count);
+
+            foreach (var VARIABLE in my)
+            {
+                Console.WriteLine($"count elem - {VARIABLE}");
+            }
+
+            //Peek Возвращает самый старый элемент, который находится в начале, Queue но не удаляет его из Queue .
+            var getOldElem = my.Peek();
+
+            Console.WriteLine($"get old elem {getOldElem}");
+            
+
+            //Dequeue удаляет самый старый элемент из начала Queue .
+            my.Dequeue();
+            my.Dequeue();
+
+            foreach (var VARIABLE in my)
+            {
+               
+                Console.Write(VARIABLE);
+                
+            }
+           
+
+        }
+
+
+
+==========================================
+
+
+
 --Linq--
 
 ------------------------------------------
@@ -7187,9 +7240,15 @@ Select: используется для создания выходной пос
 SelectMany: используется для создания выходной последовательности с проекцией "один ко многим" из входной последовательности.
 
 OrderBy: упорядочивает элементы по возрастанию
-
+--
 OrderByDescending: упорядочивает элементы по убыванию
 
+ foreach (var ind in index.OrderByDescending(e => e))//удаление несольких элементов из массива,
+                //OrderByDescending Сортирует элементы последовательности в порядке убывания, потому 
+            {
+                Files.RemoveAt(ind);
+            }
+--
 ThenBy: задает дополнительные критерии для упорядочивания элементов возрастанию
 
 ThenByDescending: задает дополнительные критерии для упорядочивания элементов по убыванию
@@ -7600,8 +7659,110 @@ solutioon manager=> Project right click => mannagger NuGet=> выбратть и
         
     </Grid>
 
+
+
 --MVVM--
 ------------------------------------------
+Рассмотрение паттерна на примере №1: Сложение двух чисел с выводом результата
+
+Методика написания программы используя подход «ModelFirst».
+
+1. Разработать модель программы.
+2. Нарисовать интерфейс программы.
+3. Соединить интерфейс и модель прослойкой VM.
+
+------------------------------------------
+Модель
+
+public class MathFuncs
+    {
+        public static int GetSum(int a, int b) => a + b;//создаем модель она состоит из сложения чисел
+    }
+
+------------------------------------------
+интерфейс (View) будет написана на XAML
+
+
+ Текстовые поля будут соединены с VM через механизм Binding. 
+Cвязь всей View и VM осуществляется, когда мы создаем объект VM и присваиванием его свойству DataContext View.
+...
+ <Grid>
+ //Binding соединяет текстовое поле со свойством VM, изменения от цели к источнику управляется свойством 
+ //Binding.UpdateSourceTrigger(передача значения в VM в момент ввода), PropertyChanged - источник обновляется немедленно, 
+ //когда изменяется целевое свойство
+       <TextBox HorizontalAlignment="Left" Margin="75,84,0,0" Text="{Binding Num1, UpdateSourceTrigger= PropertyChanged}" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox HorizontalAlignment="Left" Margin="75,129,0,0" Text="{Binding Num2, UpdateSourceTrigger= PropertyChanged}" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        //Mode=OneWay необходим для призязки свойства только для чтения
+        <TextBox HorizontalAlignment="Left" Margin="75,174,0,0" Text="{Binding Num3, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" IsReadOnly="True"/>
+
+    </Grid>
+...
+OneWay Обновляет свойство целевого объекта привязки (цели) в случае изменения исходного объекта привязки (источника).
+ Этот тип привязки подходит, если привязываемый элемент управления неявно доступен только для чтения. 
+
+------------------------------------------
+теперь реализуме VM, чтобы она автобматом обновлял наше View, нужно релищовать интерфейс INotifyPropertyChange, 
+именно так Viev и полуает уведомление что в Vm чтот изменилось и треубется обновитиь данные
+
+
+public class MainVM : INotifyPropertyChanged //Чтобы наша VM «автоматически» обновляла View,
+                                                 //требуется реализовать интерфейс INotifyPropertyChange.
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private int num1;
+
+        public int Num1
+        {
+            get { return num1; }
+            set
+            {
+                num1 = value;
+                //Затем для каждого свойства, которому потребуются уведомления об изменениях, вы вызываете OnPropertyChanged при
+                //каждом обновлении свойства.
+                OnPropertyChanged("Num3");//изменяем Textbox привязаный к Num 3 немедленно как только изменили значение в Num1
+            }
+        }
+
+        private int num2;
+
+        public int Num2
+        {
+            get { return num2; }
+            set
+            {
+                num2 = value;
+                OnPropertyChanged("Num3");
+            }
+        }
+
+        public int Num3
+        {
+            get
+            {
+                return MathFuncs.GetSum(Num1, Num2);
+            }
+        }
+
+    }
+}
+
+при измении в оддном из свойств призяхзаных к текстбоксску(1 и 2) то эта строка кода  OnPropertyChanged("Num3");
+через событие PropertyChanged извещает систему об изменении свойства. А система обновляет все привязанные объекты 
+в данном случае текбокс 3 который привязан к Num3
+
+------------------------------------------
+
+
+
+------------------------------------------
+
 подключаем к проекту фраймворк Prism 
 
 создкем прослойку между view и model
