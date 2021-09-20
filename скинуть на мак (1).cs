@@ -3381,7 +3381,7 @@ static void Main(string[] args)
 
 ==========================================
 
---generics обобщения (--упаковка распкаовка boxing unboxing--)--
+--generics обобщения (--упаковка распкаовка boxing unboxing--)--генерики--
 ------------------------------------------
 упаковка распкаовка
 
@@ -3413,7 +3413,7 @@ static void Main(string[] args)
 
 ------------------------------------------
 generics
- //чтобы решить проблему упаковки распкаовки и проблему безопасноти типов исопльзу.тся обощения
+ //чтобы решить проблему упаковки распкаовки и проблему безопасноти типов исопльзуются обощения
     class Account<T>//это универсальный парметр всемто него можно пердать любой тип
     {
         public T Id { get; set; }
@@ -3424,10 +3424,10 @@ generics
         static void Main(string[] args)
         {
             //после создания обьектов не происходит не упаковки не распкаовки
-            Account<int> acc1 = new Account<int>();//тк класс теперь обобщенный нужно прри создани экземпляра 
-            //указать какой типа экземпляр будет исопльзовать
+            Account<int> acc1 = new Account<int>();//тк класс теперь обобщенный нужно при создани экземпляра 
+            //указать какой типа экземпляр будет использовать
             Account<string> acc2 = new Account<string>();//тк класс теперь обобщенный нужно прри создани экземпляра
-            //указать какой типа экземпляр будет исопльзовать
+            //указать какой типа экземпляр будет использовать
 
             acc1.Id = 11;
             Console.WriteLine(acc1.Id);
@@ -3435,7 +3435,7 @@ generics
         }
     }
 ------------------------------------------
-так же можно использовать класс с несоклькими генериками и генерик с включенным в него классом с генериком
+так же можно использовать класс с несколькими генериками и генерик с включенным в него классом с генериком
 
 class Instantiator<U,V>
     {
@@ -3464,8 +3464,8 @@ class Program
             acc2.Sum = 60;
             Account<string> acc3 = new Account<string>();
 
-            Instantiator<Account<int>,string> i = new Instantiator<Account<int>, string>//кладев в обьект i наш класс 
-            //Action с генериком int, а вторым генриком кладем простую строку
+            Instantiator<Account<int>,string> i = new Instantiator<Account<int>, string>//кладем в обьект i наш класс 
+            //Account с генериком int, а вторым генриком кладем простую строку
             {
                 FromInstance = acc1,//кладем сюда экземпляр Acction<int>acc1 с вложеиями ввиде acc1.Id = 10 и
                 // acc1.Sum = 20
@@ -3476,8 +3476,8 @@ class Program
 
 Console.WriteLine($"{i.FromInstance.Id} {i.FromInstance.Sum} {i.ToInstance.Id} {i.ToInstance.Sum} { i.Code}");
 
-            Instantiator<int, string> j = new Instantiator<int, string>//здесь просто тандартный рпимер с двумя 
-            //генериками ввиде инт и стринг
+            Instantiator<int, string> j = new Instantiator<int, string>//здесь просто тандартный пример с двумя 
+            //генериками в виде int и string
             {
                 FromInstance = 20,
                 ToInstance = 10,
@@ -3487,7 +3487,7 @@ Console.WriteLine($"{i.FromInstance.Id} {i.FromInstance.Sum} {i.ToInstance.Id} {
 
 ------------------------------------------
 Мы не можем использовать конструктор для создания объекта типа T. Если нам нужно создать значение по умолчанию,
- то для этого необходимо использовать оператор default
+то для этого необходимо использовать оператор default
  
  class Instantiator<T>
     {
@@ -3504,21 +3504,38 @@ Console.WriteLine($"{i.FromInstance.Id} {i.FromInstance.Sum} {i.ToInstance.Id} {
             Console.WriteLine(i.instance);
         }
 
+похоже в нет 5 можем
+class Instantiator<T>
+    {
+        public T instance;
+        public Instantiator(T instances)
+        {
+            instance = instances;//здесь используется дефаулт
+        }
+    }
+
+     static void Main(string[] args)
+        {
+            Instantiator<int> i = new Instantiator<int>(2);
+
+            Console.WriteLine(i.instance);
+        }
 ------------------------------------------ 
-так же можно использовать геенрик методы 
+так же можно использовать generics методы 
 
             int x = 10;
             int y = 30;
-            Swap(ref x, ref y);//ref используется чтобы наш метод поменял значение непосрдсвтенно в перменны а,
-            // не только внутри себя 
-
+            //ref используется чтобы наш метод поменял значение непосредственно в перменных, а
+            //не только внутри себя 
+            Swap(ref x, ref y);
             //int x = 30; после работы метода в перменных выше будет так
             //int y = 10; после работы метода в перменных выше будет так
 
             string xx = "x";
             string yy = "y";
+
             Swap(ref xx, ref yy);
-             // string xx = "y"; после работы метода в перменных выше будет так
+            // string xx = "y"; после работы метода в перменных выше будет так
             // string xx = "x"; после работы метода в перменных выше будет так
 
             void Swap<T>(ref T x, ref T y)
@@ -3536,16 +3553,16 @@ Console.WriteLine($"{i.FromInstance.Id} {i.FromInstance.Sum} {i.ToInstance.Id} {
 --generic where ограничения обощений--
 ------------------------------------------
 С помощью универсальных параметров мы можем типизировать обобщенные классы любым типом. 
-Однако иногда возникает необходимость оргриничить генерик определенным типом и его наследниками.
+Однако иногда возникает необходимость ограничить генерик определенным типом и его наследниками.
 
-делается это все потому что в этом случае будет идти преобразование типов. 
+Делается это все потому что в этом случае будет идти преобразование типов. 
 Параметризация generic <T> where : class позволяет избежать преобразований типов
 
 В качестве ограничений мы можем использовать следующие типы:
 
-Классы
+Классы - универсальный параметр должен представлять ОПРЕДЕЛЕННЫЙ класс и его НАСЛЛЕДНИКОВ
 
-Интерфейсы
+Интерфейсы - универсальный параметр должен представлять ОПРЕДЕЛЕННЫЙ интерфейс и его РЕАЛИЗАЦИИ
 
 class - универсальный параметр должен представлять класс
 
@@ -3555,6 +3572,7 @@ struct - универсальный параметр должен предста
 new() - универсальный параметр должен представлять тип, который имеет общедоступный (public) конструктор без параметров
 
 ------------------------------------------
+//создадим класс Account  и его наследника Persone и DemandAcc
 class Account
 {
     public int Id { get; private set; } // номер счета
@@ -3575,11 +3593,19 @@ class Persone : Account
     }
 }
 
-Следует учитывать, что только один класс может использоваться в качестве ограничения
-Параметризация generic <T> where : class позволяет избежать преобразований типов
+class DemandAcc : Account
+{
+    public DemandAcc(int id) : base(id)
+    {
+        
+    }
+}
+
+
+Следует учитывать, что  ТОЛЬКО ОДИН КЛАСС может использоваться в качестве ограничения
 
 class Transaction<T> where T : Account// с помощью выражения where T : Account мы указываем,
-// что используемый тип T обязательно должен быть классом Account или его наследником
+// что используемый тип T обязательно должен быть классом Account или его наследником (в данном сллучае Persone)
 {
     // Благодаря подобному ограничению мы можем использовать внутри класса Transaction
     // все объекты типа T именно как объекты Account и соответственно обращаться к их свойствам и методам.
@@ -3607,23 +3633,16 @@ class Transaction<T> where T : Account// с помощью выражения wh
     }
 }
 
- class DemandAcc : Account
-    {
-        public DemandAcc(int id) : base(id)
-        {
-            
-        }
-    }
-
+ 
 class Program
 {
     static void Main(string[] args)
     {
-
-        Account acc1 = new Account(1) {Sum = 4500};
+        
+        Account acc1 = new Account(1) {Sum = 4500};//создаем класс Account Id = 1, Sum = 4500
         Account acc2 = new Account(2) {Sum = 5000};
 
-
+        //используем класс наследник который исполльзует передачу данных через конструктор в класс родитель
         DemandAcc acc3 = new DemandAcc(3){Sum = 10000};
         DemandAcc acc4 = new DemandAcc(4){Sum = 3000};
 
@@ -3633,35 +3652,36 @@ class Program
             ToAccount = acc2,
             Sum = 300
         };
-        transaction1.Execute();
 
+        transaction1.Execute();
 
         Transaction<DemandAcc> transaction2 = new Transaction<DemandAcc>//использумем наследника указанного 
         //в where T : Account класса Account
            {
-               FromAccount = acc3,//если бы в классе Transaction мы вместо типа T FromAccount, использовали бы тип Account
-               // FromAccount, в это сткрочке мы получили бы апкаст тк как acc3 чтобы присовится в перменную FromAccaunt 
-               //которая в наешму слуаае является Account, те классом родителем, нам пришлоь бы произвести апкаст 
-               //преобразовангие от производнолго к базовому классу
+               FromAccount = acc3,//если бы в классе Transaction мы вместо типа T FromAccount, использовали бы тип 
+               //Account FromAccount, в это строчук мы получили бы апкаст тк как acc3 чтобы присвоится в переменную FromAccaunt 
+               //которая в нашем случае является Account, те классом родителем, нам пришлоь бы произвести апкаст 
+               //преобразование от производного к базовому классу
 
-               ToAccount = acc4,//если бы в классе Transaction мы вместо типа T FromAccount, использовали бы тип Account
-               // FromAccount, в это сткрочке мы получили бы апкаст тк как acc3 чтобы присовится в перменную FromAccaunt 
-               //которая в наешму слуаае является Account, те классом родителем, нам пришлоь бы произвести апкаст 
-               //преобразовангие от производнолго к базовому классу
+               ToAccount = acc4,//если бы в классе Transaction мы вместо типа T FromAccount, использовали бы тип 
+               //Account FromAccount, в это строчук мы получили бы апкаст тк как acc3 чтобы присвоится в переменную FromAccaunt 
+               //которая в нашем случае является Account, те классом родителем, нам пришлоь бы произвести апкаст 
+               //преобразование от производного к базовому классу
                Sum = 6900
            };
-           DemandAcc acc5 = (DemandAcc)transaction2.FromAccount;//и если бы мны захотели бы полчуить обрантно данный обьект в 
-           //перепенную DemandAcc нам пришлось бы произсодить даункаст,но в случаее если бы мы использволи where T : Account 
-           //этоыго бы делать не пришлось -> DemandAcc acc5 = transaction2.FromAccount;
-             DemandAcc acc6 = (DemandAcc)transaction2.ToAccount;//и если бы мны захотели бы полчуить обрантно данный обьект в 
-           //перепенную DemandAcc нам пришлось бы произсодить даункаст,но в случаее если бы мы использволи where T : Account 
-           //этоыго бы делать не пришлось -> DemandAcc acc5 = transaction2.ToAccount;
+
+        DemandAcc acc5 = (DemandAcc)transaction2.FromAccount;//и если бы мы захотели бы получить обрантно данный обьект в 
+        //перепенную DemandAcc нам пришлось бы произсодить даункаст,но в случаее если бы мы использволи where T : Account 
+        //этого делать не пришлось -> DemandAcc acc5 = transaction2.FromAccount;
+        DemandAcc acc6 = (DemandAcc)transaction2.ToAccount;//и если бы мы захотели бы получить обрантно данный обьект в 
+        //перепенную DemandAcc нам пришлось бы произсодить даункаст,но в случаее если бы мы использволи where T : Account 
+        //этого делать не пришлось -> DemandAcc acc5 = transaction2.FromAccount;
         ransaction2.Execute();
 
         Console.ReadLine();
     }
 }
-}
+
 
 ------------------------------------------
 В качестве ограничения также может выступать и обобщенный класс
@@ -3715,9 +3735,10 @@ class Account<T>//Класс Account же может быть типизиров
 
            Account<string> acc1 = new Account<string>("34") { Sum = 4500 };
            Account<string> acc2 = new Account<string>("45") { Sum = 5000 };
-          
-           //Transaction<Account<string>> transaction2 = new Transaction<Account<string>>// так нельзя написать, 
+       
+           //так нельзя написать,
            //так как Bank должен быть типизирован классом Account<int> или его наследником
+           Transaction<Account<string>> transaction2 = new Transaction<Account<string>>
            {
               FromAccount = acc1,
                ToAccount = acc2,
@@ -3730,30 +3751,78 @@ class Account<T>//Класс Account же может быть типизиров
 
 ------------------------------------------
 Есть ряд стандартных ограничений, которые мы можем использовать. можно задать в качестве ограничения ссылочные типы:
-частности, можно указать ограничение, чтобы использовались только структуры или другие типы значений 
+в частности, можно указать ограничение, чтобы использовались только структуры или другие типы значений 
 
 ------------------------------------------
 ограничение структуой
 
- class Transaction<T>  where T : struct
+class Transaction<T>  where T : struct
 {
     public T FromAccount { get; set; } // с какого счета перевод
     public T ToAccount { get; set; } // на какой счет перевод
 }
 
+Transaction<int> transaction3 = new Transaction<int>//тк int предстявляет собой струтктуру
+   //мы можем сделать так
+   {
+       //соответвенно теперь нужно предостаивть FromAccount и ToAccount числовые значения
+       FromAccount = 123,
+       ToAccount = 321,  
+   };
 
- Transaction<int> transaction3 = new Transaction<int>//тк int предстявляет обой сткрутктуру
-            //мы можем сделать так
+--
+
+struct My
+    {
+        public int Id { get; set; }
+        public int Sum { get; set; }
+
+    }
+
+    class Transaction<T> where T : struct
+    {
+        public T FromAccount { get; set; } // с какого счета перевод
+        public T ToAccount { get; set; } // на какой счет перевод
+    }
+
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            My my;
+            Transaction<My> transaction3 = new Transaction<My>//тк My предстявляет собой струтктуру мы можем сделать так
             {
-                //соответвенно теперь нужно предостаивть FromAccount и ToAccount числовые значения
-                FromAccount = 123,
-                ToAccount = 321,  
+                //соответвенно теперь нужно предостаивть FromAccount и ToAccount новосозданной структуры
+                FromAccount = new My
+                {
+                    Id = 50,
+                    Sum = 100
+                },
+
+                ToAccount = new My
+                {
+                    Id = 5,
+                    Sum = 1000
+                },
             };
 
-НО при этом использовать в качестве ограничения конкретные те (имена структур) структуры в отличие от классов нельзя!
+            //НО при этом использовать в качестве ограничения конкретные те (имена структур) структуры в отличие от классов нельзя!
+            Transaction<myy> transaction3 = new Transaction<my>//так делать нелья!
+            {
+                ...
+            };
+            Console.ReadLine();
+
+        }
+    }
 
 ------------------------------------------
 ограничение классом
+Означает, что тип T должен быть ссылочным типом (а не типом значения).
+Это означает T не может быть int, float, double, DateTimeили любой другой struct(тип значения).
+Это может быть stringили любой другой пользовательский ссылочный тип, если он имеет конструктор по умолчанию или без параметров.
 
 class Transaction<T> where T : class
 {}
@@ -3763,6 +3832,7 @@ class Transaction<T> where T : class
 
 А также можно задать с помощью слова new в качестве ограничения класс или структуру, которые имеют общедоступный 
 конструктор без параметров
+
 
 class Transaction<T> where T : new()//это значит что ограничивающеи генерик 
 //тип дожен поределять констуктор по умолчанию без парметров 
