@@ -8618,6 +8618,191 @@ solutioon manager=> Project right click => mannagger NuGet=> выбратть и
         
     </Grid>
 
+==========================================
+
+
+--MVC--
+------------------------------------------
+model - содержит или предтавлляет данные с которыми работают полльзователи, а так же логику которая связаня с данными, например логику 
+валидаации данных, как правило обьект модели извлекают и сохраняют состояние модели в базе данных и переддает ихв в view или обновляет
+
+view - компоненты которые формируют пользовательский интерфейс приложения. как правило, в пользовательском интерфейфсе(view) 
+отображаются данные model, валидация входных данных
+
+controller - кллассы ктороые обраюатывают запросы из моделли, получают данные модели, вызыают шаблоны преддставления вызово которе 
+возвращают ответ в view
+
+mvc позволяет разделить логику от представлления данных. 
+==========================================
+
+--команда--паттерн команда--
+------------------------------------------
+команда поведнческий паттерн, для гибкого механизма действий над чем ибо или команд. в этом механизме 
+класс отправитьель команды и класс получаетль не зависят друг от друга
+
+компоенты команды
+
+command
+базовый класс. объявляет интерфейс для выполнения операции(command)
+
+concretteComand 
+опредедляет связь междду обьектом получателем(Resiever) и действием.
+реализует интерфейс, обявленный command
+
+client
+создает объект concretteCommand и задает для него поллучателя
+
+invoker
+обращаается к команде(command) для выполнения операции
+
+reciever
+распологает информацией о способах выполнения команды. в его 
+роли может выступть любой класс
+
+
+------------------------------------------
+где используется паттерн команда
+
+GUI кнопки и пункты меню
+запись макросов
+многоуровневая отмена операций
+сети
+индикааторы выполнения
+пулы потоков
+транзакции
+мастера(устанговщики программ, мастера настроек)
+
+пример реализаации c#
+
+
+рассмотрим програамму для управления самолетом
+
+class PowerSupply//reсiever распологает инфой о способах выполнения команды(command)
+{
+   public string Status { get; set; }//сюда будет положена командда (OutputOn или OutputOff)
+}
+
+
+тк у обеих команд общим является не только интерфейс но и там же reсiever (PowerSupply) и 
+механизм инициализации, вместо интерфейса можно использовать простой абстрактный класс
+
+abstract class Command//базовый класс, объявляет интерфейс или абстрактный класс для выполнения операции(comand)
+{
+    protected PowerSupply mySupply;
+    public abstract void Execute();//выполнить команду
+    public abstract void Undo();//отменить команду
+
+    public Command(PowerSupply supply)
+    {
+        mySupply = supply;
+    }
+}
+
+В обеих командах реализована одноуровневая отмена действия.
+
+class OutputOn : Command//concretteComand опредедляет связь междду обьектом получателем(Resiever) и действием.
+//реализует интерфейс, обявленный command
+{
+    public OutputOn(PowerSupply supply) : base(supply)
+    {
+    }
+    public override void Execute()
+    {
+        mySupply.Status = "OutputOn";
+    }
+    public override void Undo()
+    {
+        mySupply.Status = "OutputOff";
+    }
+}
+
+class OutputOff : Command//concretteComand опредедляет связь междду обьектом получателем(Resiever) и действием.
+                             //реализует интерфейс, обявленный command
+{
+    public OutputOff(PowerSupply supply) : base(supply)
+    {
+    }
+    public override void Execute()
+    {
+        mySupply.Status = "OutputOff";
+    }
+    public override void Undo()
+    {
+        mySupply.Status = "OutputOn";
+    }
+}
+
+class Invoker
+{
+    private Command myCommand;//Сама команда задаётся через свойство типа Command, которое связано с закрытым полем myCommand.
+
+    public Command Command
+    {
+        set
+        {
+            myCommand = value;
+        }
+    }
+
+    public void Run()
+    {
+        myCommand.Execute();
+    }
+
+    public void Undo()
+    {
+        myCommand.Undo();
+    }
+}
+
+class Programm
+{
+    static void Main(string[] args)
+    {
+        PowerSupply supply = new PowerSupply();
+        Invoker supplyControl = new Invoker();
+        int i = 0;
+        while (i != 52)
+        {
+            i = SupplyControl(supply, supplyControl);
+            Console.ReadLine();
+        }
+        
+           
+        
+    }
+
+    static int SupplyControl(PowerSupply supply, Invoker resiever)
+    {
+        Console.WriteLine("What to do power supply");
+
+        int action = Console.Read();
+
+        switch (action)
+        {
+            case 49:
+                {
+                    resiever.Command = new OutputOff(supply);
+                    resiever.Run();
+                }
+                break;
+            case 50:
+                {
+                    resiever.Command = new OutputOn(supply);
+                    resiever.Run();
+                }
+                break;
+            case 51:
+                resiever.Undo();
+                break;
+        }
+
+        Console.WriteLine(supply.Status);
+        return action;
+    }
+}
+
+==========================================
 
 
 --MVVM--
