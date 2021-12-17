@@ -10523,7 +10523,7 @@ defalt
 
 позволяет одному классу (наследнику) унаследовать функционал другого класса (родительского). 
 Нередко отношения наследования еще называют генерализацией или обобщением. 
-Наследование определяет отношение IS A, то есть "является". Например:
+Наследование определяет отношение IS A, то есть "является". Например менеджер ЯВЛЯЕТСЯ юзером:
 
 class User
 {
@@ -10538,8 +10538,10 @@ class Manager : User
 
 ------------------------------------------
 --Реализация 
-предполагает определение интерфейса и его реализация в классах. Например, 
-имеется интерфейс IMovable с методом Move, который реализуется в классе Car:
+предполагает определение интерфейса и его реализация в классах
+(это контракт что какой-то определенный тип обязательно реализует некоторый функционал). 
+Например, имеется интерфейс IMovable с методом Move, который реализуется в классе Car 
+:
 
 public interface IMovable
 {
@@ -10552,10 +10554,17 @@ public class Car : IMovable
         Console.WriteLine("Машина едет");
     }
 }
-
+public class Horse : IMovable
+{
+    public void Move()
+    {
+        Console.WriteLine("Лошадть скачет");
+    }
+}
 ------------------------------------------
 --Ассоциация 
-отношение, при котором объекты одного типа неким образом связаны с объектами другого типа. 
+это когда один класс включает в себя другой класс в качестве одного из полей. 
+Ассоциация описывается словом «имеет».  имеет двигатель. 
 Например, объект одного типа содержит или использует объект другого типа. Например,
 игрок играет в определенной команде:
 
@@ -10575,7 +10584,7 @@ class Player
 ------------------------------------------
 --Композиция 
 определяет отношение HAS A, то есть отношение "имеет". Например, в класс автомобиля 
-содержит экземпляр класса электрического двигателя:
+содержит экземпляр класса электрического двигателя, умирает автомобиль умирает и двигатель:
 
 public class ElectricEngine
 { }
@@ -10594,7 +10603,8 @@ public class Car
 в даном примере двигател не может сущетсвовать отдельно от автомобиля
 ------------------------------------------
 --агрегация 
-От композиции следует отличать агрегацию. Она также предполагает отношение HAS A, но реализуется она иначе
+От композиции следует отличать агрегацию. Она также предполагает отношение HAS A,
+когдда умрет автмобиль engine может жить дальше, и реализуется она иначе
 
 public abstract class Engine
 { }
@@ -10618,7 +10628,215 @@ public class Car
 
 Эти паттерны отвечают за удобное и безопасное создание новых объектов или даже целых семейств объектов.
 
--Абстрактная фабрика (Abstract Factory)
+--Абстрактная фабрика (Abstract Factory)
+------------------------------------------
+задает иинтерфейс создания всех доступных типов продуктов, а каждая конкретная реализация фабрики порождает продукты 
+одной из вариаций, клиентский код вызывает методы фабрики для получения продуктов, вместо самостоятельного создания 
+с помощью оператора new, при этом сама фабрика следиит за тем чтобы создать продукт нужной вариации
+
+прооблема - в электронном магазине - продаются резистор конденсатор предохранитель ,
+есть несолько вариаций этих  элементов например стили Smd и Dip
+
+задача - найти способ создавать элементы чтобы они сочетались с другими элементами по признаку Smd/Dip, можно
+вносить изменения в существующий код при добавлении новых элементов или семейств(например Sod) в магазин.
+
+решение - создать общие интерфейсы для отдельных продуктов конденсатор, резистор, предохранитель
+
+namespace Pattern;
+
+//интерфейс абстрактной фабирки обьявляет набор методов 
+public interface IAbstractFactory
+{
+    //эти методы возвращают асбтарктные резисторы и тд.эти методы называются семеством и связаны одной темой 
+    //(в данном случае все это радиоэлменты), они могут взаимодейтсовать между собой и иметь вариации
+    //(в данном случае резисторы конденсаторы и предохранители несовместимы)
+    IAbstractResistor CreateResistor();
+    IAbstractCapacitor CreateCapacitor();
+    IAbstractFuse CreateFuse();
+}
+
+//конкретаня фабрика производит семейство элменетов одной вариации (в данном случае smd)
+//фабрика гарнтирует совестимость полученых продуктов,
+class FactorySmd : IAbstractFactory
+{
+    //методы фабрики возварщаюст абстакртные элменты,
+    public IAbstractCapacitor CreateCapacitor()
+    {
+        //при этом внутри мтеода создается экз конкретного элемента(в данном случае SmdCapacitor)
+        return new SmdCapacitor();
+    }
+
+    public IAbstractResistor CreateResistor()
+    {
+        return new SmdResistor();
+    }
+
+    public IAbstractFuse CreateFuse()
+    {
+        return new SmdFuse();
+    }
+}
+
+//каждая вариация фабрикии имеет соответвующую вариацию продукта (те FactorySmd - SmdCapacitor и др,
+//а FactoryDip - DipCapacitor)
+class FactoryDip : IAbstractFactory
+{
+    public IAbstractCapacitor CreateCapacitor()
+    {
+        return new DipCapacitor();
+    }
+
+    public IAbstractResistor CreateResistor()
+    {
+        return new DipResistor();
+    }
+
+    public IAbstractFuse CreateFuse()
+    {
+        return new DipFuse();
+    }
+}
+#region каждый отдельный элемент семейства должен иметь базовый интрефейс, все вариаци элмента реализуют этот интерфейс 
+public interface IAbstractResistor
+{
+    string Type(string type);
+}
+
+//все продукты могут взаимодействать друг с другом но правильное возмонжно только между одной 
+//и той же вариацией например Smd
+public interface IAbstractCapacitor
+{
+    //IAbstractCapacitor способен работать самостоятельно...
+    string Type(string type);
+ //...но также и взаимодействовать с прдуктами Fuse той же вариации те Smd
+    string AnotherUsefulType(IAbstractFuse collaborator);
+}
+
+public interface IAbstractFuse
+{
+    string Type(string type);
+}
+
+#endregion
+
+#region конкретные элементы создаются соответсующими фабриками эти будут созданы с помощью DipFactory
+
+class DipFuse : IAbstractFuse
+{
+
+    public string Type(string type)
+    {
+        return "Это предохранитьель в dip корпусе";
+    }
+}
+
+class DipResistor : IAbstractResistor
+{
+
+    public string Type(string type)
+    {
+        return "Это резистор в dip корпусе";
+    }
+}
+
+class DipCapacitor : IAbstractCapacitor
+{
+
+    public string Type(string type)
+    {
+        return "Это конденсатор в dip корпусе";
+    }
+
+    //элемент DipCapasitor может работать корректно только с DipFuse темнеменее он принимает любой экземпляр 
+    //IAbstractFuse в качестве аргумента
+    public string AnotherUsefulType(IAbstractFuse collaborator)
+    {
+        var result = collaborator.Type("");
+        return $"Это коллаборация DipCapasitor и {result}";
+    }
+}
+
+
+#endregion
+
+#region конкретные элементы создаются соответсующими фабриками эти будут созданы с помощью SmdFactory 
+
+class SmdFuse : IAbstractFuse
+{
+
+    public string Type(string type)
+    {
+        return "Это предохранитель в smd корпусе";
+    }
+}
+
+class SmdResistor : IAbstractResistor
+{
+
+    public string Type(string type)
+    {
+        return "Это резистор в smd корпусе";
+    }
+}
+
+class SmdCapacitor : IAbstractCapacitor
+{
+
+    public string Type(string type)
+    {
+        return "Это конденсатор в smd корпусе";
+    }
+
+    //элемент SmdCapasitor может работать корректно только с SmdFuse темнеменее он принимает любой экземпляр 
+    //IAbstractFuse в качестве аргумента
+    public string AnotherUsefulType(IAbstractFuse collaborator)
+    {
+        var result = collaborator.Type("");
+        return $"Это коллаборация DipCapasitor и {result}";
+    }
+}
+
+#endregion
+
+public class Client
+{
+    //фабрика записаная сюда будет решать какой тип элмента(Smd или Dip) вернут ее методы
+    public void ClientMethod(IAbstractFactory factory)
+    {
+        var capacitor = factory.CreateCapacitor();
+        var fuse = factory.CreateFuse();
+        var resistor = factory.CreateResistor();
+
+        Console.WriteLine(capacitor.Type(""));
+        Console.WriteLine(capacitor.AnotherUsefulType(fuse));
+        Console.WriteLine(resistor.Type(""));
+    }
+}
+
+
+using Pattern;
+
+Client client = new Client();
+// Клиентский код может работать с любым конкретным классом фабрики.
+
+client.ClientMethod(new FactorySmd());
+Console.WriteLine();
+
+client.ClientMethod(new FactoryDip());
+
+
+Это конденсатор в smd корпусе
+Это коллаборация DipCapasitor и Это предохранитель в smd корпусе
+Это резистор в smd корпусе
+
+Это конденсатор в dip корпусе
+Это коллаборация DipCapasitor и Это предохранитьель в dip корпусе
+Это резистор в dip корпусе
+
+
+
+
+
 
 -Строитель (Builder)
 
