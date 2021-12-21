@@ -10694,7 +10694,7 @@ class FactoryDip : IAbstractFactory
     public IAbstractFuse CreateFuse()
     {
         return new DipFuse();
-    }
+    } 
 }
 #region каждый отдельный элемент семейства должен иметь базовый интрефейс, все вариаци элмента реализуют этот интерфейс 
 public interface IAbstractResistor
@@ -10833,19 +10833,155 @@ client.ClientMethod(new FactoryDip());
 Это коллаборация DipCapasitor и Это предохранитьель в dip корпусе
 Это резистор в dip корпусе
 
+по сути: класс/интерфейс не содержащий собственной логики(public interface IAbstractFactory),
+все его методы (IAbstractResistor CreateResistor(),
+IAbstractCapacitor CreateCapacitor(),IAbstractFuse CreateFuse()) возварщают экземпляры других 
+интерфейсов(IAbstractResistor,IAbstractCapacitor,IAbstractFuse) и вызыываются внешними копонентами
+(DipFuse и др). этот паттер позволяет подменив реализацию одногго иинтерфейса(IAbstractFactory), 
+подменитиь набоор реализаций ограниченого множества интерфейсов(FactorySmd,FactoryDip). 
+
+==
+
+--Строитель (Builder)
+это порождающий паттер проектировния, который позволяет создавать сложные обьекты пошаговою. 
+дает возможность использовать один и тот же коод строительства для получения разных представлений обьектов
+- сложный обьект требующий кропотливой пошагоовой инициализации множества полей
+и вложеннх обьектов. 
+код инициа таких обьектов обычно спрятан внутри конструозногго констурктора с деятком параметров. 
+либбо еше хуже распылен по всему клиенсткеому коду,
+
+прооблема - как создать объект дом, нужно соптаить 4 стены установить двери, всатвить пару окон и положить 
+крышу. но чо если требутеся дом помбольше, имеющий сад, бассейн, джакузи и прочее добро.
 
 
 
 
 
--Строитель (Builder)
+==
 
--Фабричный метод (Factory Method)
+--Фабричный метод (Factory Method)
+------------------------------------------
+порождающие паттерн проектирования, коотороый определяет общий интерфейс для созания обьектов(ITransport) через
+асбтсрактный/вирутальный метод (public abstract ITransport Transport())в суперклассе(Logistic),
+позволяя подклассам(SeaLogistic, AirLogistic) изменять тип создаваемых обьектов (SeaTransport ,AirTransport).
 
--Прототип (Prototype)
+проблема - есть система управления грузовыми перевозками сперва в ней превозятся тольько по морю
+поэтому класс работает с оьбектами класса SeaTransport, вкакойто момент требуется добавить превозки по возуху
 
--Одиночка (Singleton)
+решение - паттерн фабричный метод созадет обьекты не напрямую исопльзуя оператор new  а через выбор особого
+фабричногго метода, создавать обьчекты через new будет сам фабричный метод.
 
+namespace Pattern;
+
+//определяет иинтерфейс классов кторы надо создавать
+public interface ITransport
+{ 
+    public string CompanyName { get; set; }
+    void Operation();
+    
+}
+
+
+//класссы ктороые надо создавать, предствлюящие рализацию класса Itransport их может быть множество
+public class SeaTransport : ITransport
+{
+    public string CompanyName { get; set; }
+
+    public void Operation()
+    {
+        Console.WriteLine($"Доставляется по морю, компанией { CompanyName}");
+    }
+    
+}
+//класссы ктороые надо создавать, предствлюящие рализацию класса Itransport
+public class AirTransport : ITransport
+{
+    public string CompanyName { get; set; }
+
+    public void Operation()
+    {
+        Console.WriteLine($"Доставляется по воздуху {CompanyName}");
+    }
+}
+
+//этот абстакртный класс определяет абстарктный методд который возрващает обььекты интерфейса Transport
+public abstract class Logistic
+{
+    protected Logistic(string name)
+    {
+        NameLogistic = name;
+    }
+
+    public string NameLogistic { get; }
+    //этот метод возварщает бьекты интерфейса ITr...
+    public abstract ITransport Transport();
+}
+
+//класссы ктороые надо создавать, предствлюящие рализацию класса Logistic они определяют кажддый свою
+//реализацию метода Transport(), причем метод Transport() кадждого отдельного класса создателя
+//(в данном случае SeaLogistic) возварщает определенный тип продукта(в данном случае SeaTransport),
+// для каждого конкретногго класса трансспорта опредделяется конкретный класс лигоистики
+public class SeaLogistic : Logistic
+{
+    private string companyName;
+    public SeaLogistic(string name) : base(name)
+    {
+        companyName = name;
+    }
+
+    public override ITransport Transport()
+    {
+        //SeaLogistic определяет какой конкретыный тип тракнспорта ему создаать
+        var sea = new SeaTransport
+        {
+            CompanyName = companyName
+        };
+        return sea;
+    }
+}
+public class AirLogistic : Logistic
+{
+    private string companyName;
+    public AirLogistic(string name) : base(name)
+    {
+        companyName = name;
+    }
+
+    public override ITransport Transport()
+    {
+        var air = new AirTransport
+        {
+            CompanyName = companyName
+        };
+        return air;
+    }
+}
+//определяем класс создателя
+Logistic logistic = new SeaLogistic("морская 1");
+
+//он определяет какой тип троанспорта вернется из метода
+var transport = logistic.Transport();
+//вызываем у опрееленногго транспорта его метод
+transport.Operation();//Доставляется по морю, компанией морская 1
+
+logistic = new AirLogistic("Воздушная 1");
+
+var transport2 = logistic.Transport();
+
+transport.Operation();//Доставляется по морю, компанией морская 1
+
+по сути: есть некий класс (Logistic) ктороый выполняет свою специйфическую 
+фкнцию(оперделяет какой вид трансорпта исопльзуется), часть своей функциональности он делегирует 
+внешнему интерфейсу (public abstract ITransport Transport()) который инсталируется
+через вирутальный или абстаркатный метод этоого класса. наследники этого класса(SeaLogistic,AirLogistic),
+ перекрыв этот метод( public override ITransport Transport()) могут вернуть другие реализаци интерфейса,
+ ( var air = new AirTransport), используемого основным алгоритмом класа.WriteLine
+==
+
+
+-Прот()тип (Prototype)
+
+-Одиночка (Singleton
 ==========================================
 
 
@@ -11980,8 +12116,7 @@ book.Print();
 --Абстрактная фабрика--
 позволяет создавать семейства связанных объектов, не привязываясь к конкретным классам создаваемых объектов.
 
---
-Фабричный метод
+--Фабричный метод--
 этот паттерн определяет интерфейс для созания обьектов неткорого класса
 
 ==========================================
