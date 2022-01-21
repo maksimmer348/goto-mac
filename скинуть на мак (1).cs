@@ -10419,1375 +10419,6 @@ defalt
 
 
 ==========================================
-
-
---Паттерны програмирования--
-------------------------------------------
---основные понятия для паттернов
-
-------------------------------------------
---Наследование 
-
-позволяет одному классу (наследнику) унаследовать функционал другого класса (родительского). 
-Нередко отношения наследования еще называют генерализацией или обобщением. 
-Наследование определяет отношение IS A, то есть "является". Например менеджер ЯВЛЯЕТСЯ юзером:
-
-class User
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-}
- 
-class Manager : User
-{
-    public string Company{ get; set; }
-}
-
-------------------------------------------
---Реализация 
-предполагает определение интерфейса и его реализация в классах
-(это контракт что какой-то определенный тип обязательно реализует некоторый функционал). 
-Например, имеется интерфейс IMovable с методом Move, который реализуется в классе Car 
-:
-
-public interface IMovable
-{
-    void Move();
-}
-public class Car : IMovable
-{
-    public void Move()
-    {
-        Console.WriteLine("Машина едет");
-    }
-}
-public class Horse : IMovable
-{
-    public void Move()
-    {
-        Console.WriteLine("Лошадть скачет");
-    }
-}
-------------------------------------------
---Ассоциация 
-это когда один класс включает в себя другой класс в качестве одного из полей. 
-Ассоциация описывается словом «имеет».  имеет двигатель. 
-Например, объект одного типа содержит или использует объект другого типа. Например,
-игрок играет в определенной команде:
-
-class Team
-{
- 
-}
-class Player
-{
-    public Team Team { get; set; }
-}
-
-Нередко при отношении ассоциации указывается кратность связей. 
-В данном случае единица у Team и звездочка у Player на диаграмме отражает связь 1 ко многим. 
-То есть одна команда будет соответствовать многим игрокам.
-
-------------------------------------------
---Композиция 
-определяет отношение HAS A, то есть отношение "имеет". Например, в класс автомобиля 
-содержит экземпляр класса электрического двигателя, умирает автомобиль умирает и двигатель:
-
-public class ElectricEngine
-{ }
- 
-public class Car
-{
-    ElectricEngine engine;
-    public Car()
-    {
-        engine = new ElectricEngine();//это копмозиция, при каждом создании экземпляра типа car мы через
-        // констркутор создаем экземпляр класса ElectricEngine,каждой отдельной машине по отдельному движку
-    }
-}
-При этом класс автомобиля полностью управляет жизненным циклом объекта двигателя. 
-При уничтожении объекта автомобиля в области памяти вместе с ним будет уничтожен и объект двигателя. 
-И в этом плане объект автомобиля является главным, а объект двигателя - зависимой.
-в даном примере двигател не может сущетсвовать отдельно от автомобиля
-------------------------------------------
---Агрегация 
-От композиции следует отличать агрегацию. Она также предполагает отношение HAS A,
-когда умрет автмобиль engine может жить дальше, и реализуется она иначе
-
-public abstract class Engine
-{ }
- 
-public class Car
-{
-    Engine engine;//обьявляем обьььект те создаем его
-    public Car(Engine eng)
-    {
-        engine = eng;//присваиваем ссылку на созданый обьект
-    }
-}
-
-При агрегации реализуется слабая связь, то есть в данном случае объекты Car и Engine будут равноправны. 
-В конструктор Car передается ссылка на уже имеющийся объект Engine. 
-И, как правило, определяется ссылка не на конкретный класс, а на абстрактный класс или интерфейс, 
-что увеличивает гибкость программы.
-------------------------------------------
-виды паттернов
---
---Порождающие паттерны
-
-Эти паттерны отвечают за удобное и безопасное создание новых объектов или даже целых семейств объектов.
-
---Абстрактная фабрика (Abstract Factory)
-------------------------------------------
-задает иинтерфейс создания всех доступных типов продуктов, а каждая конкретная реализация фабрики порождает продукты 
-одной из вариаций, клиентский код вызывает методы фабрики для получения продуктов, вместо самостоятельного создания 
-с помощью оператора new, при этом сама фабрика следиит за тем чтобы создать продукт нужной вариации
-
-когда использовать - когда система не должна зависет от способа создания и компоновки новых обьектов
-- когда создаваемые обьекты долджны исопльзоватся вместе и явщяютсся взаимосвязанными
-
-прооблема - в электронном магазине - продаются резистор конденсатор предохранитель ,
-есть несолько вариаций этих  элементов например стили Smd и Dip
-
-задача - найти способ создавать элементы чтобы они сочетались с другими элементами по признаку Smd/Dip, можно
-вносить изменения в существующий код при добавлении новых элементов или семейств(например Sod) в магазин.
-
-решение - создать общие интерфейсы для отдельных продуктов конденсатор, резистор, предохранитель
-
-namespace Pattern;
-
-//интерфейс абстрактной фабирки обьявляет набор методов 
-public interface IAbstractFactory
-{
-    //эти методы возвращают асбтарктные резисторы и тд.эти методы называются семеством и связаны одной темой 
-    //(в данном случае все это радиоэлменты), они могут взаимодейтсовать между собой и иметь вариации
-    //(в данном случае резисторы конденсаторы и предохранители несовместимы)
-    IAbstractResistor CreateResistor();
-    IAbstractCapacitor CreateCapacitor();
-    IAbstractFuse CreateFuse();
-}
-
-//конкретаня фабрика производит семейство элменетов одной вариации (в данном случае smd)
-//фабрика гарнтирует совестимость полученых продуктов,
-class FactorySmd : IAbstractFactory
-{
-    //методы фабрики возварщаюст абстакртные элменты,
-    public IAbstractCapacitor CreateCapacitor()
-    {
-        //при этом внутри мтеода создается экз конкретного элемента(в данном случае SmdCapacitor)
-        return new SmdCapacitor();
-    }
-
-    public IAbstractResistor CreateResistor()
-    {
-        return new SmdResistor();
-    }
-
-    public IAbstractFuse CreateFuse()
-    {
-        return new SmdFuse();
-    }
-}
-
-//каждая вариация фабрикии имеет соответвующую вариацию продукта (те FactorySmd - SmdCapacitor и др,
-//а FactoryDip - DipCapacitor)
-class FactoryDip : IAbstractFactory
-{
-    public IAbstractCapacitor CreateCapacitor()
-    {
-        return new DipCapacitor();
-    }
-
-    public IAbstractResistor CreateResistor()
-    {
-        return new DipResistor();
-    }
-
-    public IAbstractFuse CreateFuse()
-    {
-        return new DipFuse();
-    } 
-}
-#region каждый отдельный элемент семейства должен иметь базовый интрефейс, все вариаци элмента реализуют этот интерфейс 
-public interface IAbstractResistor
-{
-    string Type(string type);
-}
-
-//все продукты могут взаимодействать друг с другом но правильное возмонжно только между одной 
-//и той же вариацией например Smd
-public interface IAbstractCapacitor
-{
-    //IAbstractCapacitor способен работать самостоятельно...
-    string Type(string type);
- //...но также и взаимодействовать с прдуктами Fuse той же вариации те например Smd 
-    string AnotherUsefulType(IAbstractFuse collaborator);
-}
-
-public interface IAbstractFuse
-{
-    string Type(string type);
-}
-
-#endregion
-
-#region конкретные элементы создаются соответсующими фабриками эти будут созданы с помощью DipFactory
-
-class DipFuse : IAbstractFuse
-{
-
-    public string Type(string type)
-    {
-        return "Это предохранитьель в dip корпусе";
-    }
-}
-
-class DipResistor : IAbstractResistor
-{
-
-    public string Type(string type)
-    {
-        return "Это резистор в dip корпусе";
-    }
-}
-
-class DipCapacitor : IAbstractCapacitor
-{
-
-    public string Type(string type)
-    {
-        return "Это конденсатор в dip корпусе";
-    }
-
-    //элемент DipCapasitor может работать корректно только с DipFuse темнеменее он принимает любой экземпляр 
-    //IAbstractFuse в качестве аргумента
-    public string AnotherUsefulType(IAbstractFuse collaborator)
-    {
-        var result = collaborator.Type("");
-        return $"Это коллаборация DipCapasitor и {result}";
-    }
-}
-
-
-#endregion
-
-#region конкретные элементы создаются соответсующими фабриками эти будут созданы с помощью SmdFactory 
-
-class SmdFuse : IAbstractFuse
-{
-
-    public string Type(string type)
-    {
-        return "Это предохранитель в smd корпусе";
-    }
-}
-
-class SmdResistor : IAbstractResistor
-{
-
-    public string Type(string type)
-    {
-        return "Это резистор в smd корпусе";
-    }
-}
-
-class SmdCapacitor : IAbstractCapacitor
-{
-
-    public string Type(string type)
-    {
-        return "Это конденсатор в smd корпусе";
-    }
-
-    //элемент SmdCapasitor может работать корректно только с SmdFuse темнеменее он принимает любой экземпляр 
-    //IAbstractFuse в качестве аргумента
-    public string AnotherUsefulType(IAbstractFuse collaborator)
-    {
-        var result = collaborator.Type("");
-        return $"Это коллаборация DipCapasitor и {result}";
-    }
-}
-
-#endregion
-
-public class Client
-{
-    //фабрика записаная сюда будет решать какой тип элмента(Smd или Dip) вернут ее методы
-    public void ClientMethod(IAbstractFactory factory)
-    {
-        var capacitor = factory.CreateCapacitor();
-        var fuse = factory.CreateFuse();
-        var resistor = factory.CreateResistor();
-
-        Console.WriteLine(capacitor.Type(""));
-        Console.WriteLine(capacitor.AnotherUsefulType(fuse));
-        Console.WriteLine(resistor.Type(""));
-    }
-}
-
-
-using Pattern;
-
-Client client = new Client();
-// Клиентский код может работать с любым конкретным классом фабрики.
-
-client.ClientMethod(new FactorySmd());
-Console.WriteLine();
-
-client.ClientMethod(new FactoryDip());
-
-
-Это конденсатор в smd корпусе
-Это коллаборация DipCapasitor и Это предохранитель в smd корпусе
-Это резистор в smd корпусе
-
-Это конденсатор в dip корпусе
-Это коллаборация DipCapasitor и Это предохранитьель в dip корпусе
-Это резистор в dip корпусе
-
-по сути: класс/интерфейс не содержащий собственной логики(public interface IAbstractFactory),
-все его методы (IAbstractResistor CreateResistor(),
-IAbstractCapacitor CreateCapacitor(),IAbstractFuse CreateFuse()) возварщают экземпляры других 
-интерфейсов(IAbstractResistor,IAbstractCapacitor,IAbstractFuse) и вызыываются внешними копонентами
-(DipFuse и др). этот паттер позволяет подменив реализацию одногго иинтерфейса(IAbstractFactory), 
-подменитиь набоор реализаций ограниченого множества интерфейсов(FactorySmd,FactoryDip). 
-
-==
-
---Строитель (Builder)
-это порождающий паттер проектировния, который позволяет создавать сложные обьекты пошаговою. 
-дает возможность использовать один и тот же код строительства для получения разных представлений обьектов
-- сложный обьект требующий кропотливой пошаговой инициализации множества полей
-и вложеннх обьектов. 
-код инициализации таких обьектов обычно спрятан внутри монструозногго констурктора с десятком параметров. 
-либо, что еше хуже распылен по всему клиенсткеому коду. 
-
-когда использовать - когда процесс создания нового объекта не должен зависеть от того, 
-из каких частей этот объект состоит и как эти части связаны между собой
--когда необходимо обеспечить получение различных вариаций объекта в процессе его создания
-
-прооблема - как создать объект дом, нужно соптаить 4 стены установить двери, всатвить пару окон и положить 
-крышу. но чо если требутеся дом помбольше, имеющий сад, бассейн, джакузи и прочее добро.
-
-!решение - расширить клас дом, создвая подклассы для всех комбинаций параметров дома, ПРОБЛЕМА такого 
-решения это громадное колво классов которые придется создать. каждый новый парметр, вроде цвета обоев или 
-материала кровли, заставит создать все больше и больше класов для перечисления всех восзможных вариантов.
-
-!решение -  или можно создать гиганский констурктор с множеством парамтеров, но тогда придется в в случае
-если например у дома нет басейна ставить в этот парамтер null
-
-решение - можно вывести создаение обььекта за пределы его сообственного класса, поручив это отдельным
-обьектам- строителям они разобьт контсруирование обьекта на отдельные шаги 
-(построить стены, вставит двери и тд), чтобы моздадть обьект, нужно поочередно вызывать метооды строоителя.
-
-причем можно запускат только те шаги которые нужна для производства дома текущей конфигурации.
-
-приэтом даже один и тот же шаг строительства может иметь разные вариации
-(деревяный дом - деревянные стены, кирпичный дом - кирпичные стены). в этом случае моожно создать несольтко
-строитиелей выполняющих оддни и те же шаги по-разному. 
-
-namespace Pattern;
-
-//интерфейс или абстрактный класс обьявляет создающие методы для чайстей обьектов
-//продуктов
-public interface IBuilderPencil
-{
-    /// <summary>
-    /// создаем стрержень
-    /// </summary>
-    public abstract void BuildShaft();
-
-    /// <summary>
-    /// создаем корпус 
-    /// </summary>
-    public abstract void BuildCase();
-
-    /// <summary>
-    /// создаем стриралку
-    /// </summary>
-    public abstract void BuildEraser();
-}
-
-//классы конкретного строителя следуют интерффейсу строителя и предоостявляют 
-//конкретные реализаци шагов построения ваша программа должна иметь несолтко 
-//вариантов строителелй реализованных по рахному
-public class BuilderPlasticPencil : IBuilderPencil
-{
-    //обьект каарндаша с которым будут производится манипуляции
-    public Pencil pencil { get; private set; }
-
-    //создать новый (пустой) экземпляр обьекта который мы будем строить с 
-    // помощьью методов ниже
-    public BuilderPlasticPencil()
-    {
-        CreatePencil();
-    }
-
-    //метод создающий новый экземпляр
-    protected void CreatePencil()
-    {
-        pencil = new Pencil();
-    }
-
-    #region методы стротели для экземпляра класса который был создан выше
-
-    public void BuildShaft()
-    {
-        pencil.Add("Shaft");
-    }
-
-    public void BuildCase()
-    {
-        pencil.Add($"Case in plastic");
-    }
-
-    public void BuildEraser()
-    {
-        pencil.Add("Earser");
-    }
-
-    #endregion
-
-    //конкретный строители должны предоставит собственне методы получения результатов
-    //изза того что различне типы строителей могут создавать соверщено разные продукты
-    //с разными интерфейсами.
-    
-    //метод возварщающий результат - построенный обьект
-    public Pencil GetPencil()
-    {
-        var result = pencil;
-        //обычно ппосле возварщения результата клиенту, экземпляр строителя
-        //должен быть готов к созданию нового продукта, но неообязательно
-        CreatePencil();
-        return result;
-    }
-}
-
-public class BuilderWoodPencil : IBuilderPencil
-{
-    //обьект каарндаша с которым будут производится манипуляции
-    public Pencil pencil { get; private set; }
-
-    //создать новый (пустой) экземпляр обьекта который мы будем строить с 
-    // помощьью методов ниже
-    public BuilderWoodPencil()
-    {
-        CreatePencil();
-    }
-
-    //метод создающий новый экземпляр
-    protected void CreatePencil()
-    {
-        pencil = new Pencil();
-    }
-    
-    public void BuildShaft()
-    {
-        pencil.Add("Shaft");
-    }
-
-    public void BuildCase()
-    {
-        pencil.Add($"Case in wood");
-    }
-
-    public void BuildEraser()
-    {
-        pencil.Add("Earser");
-    }
-
-    public Pencil GetPencil()
-    {
-        var result = pencil;
-        CreatePencil();
-        return result;
-    }
-}
-
-public class Pencil
-{
-    private List<string> pencilParts = new();
-
-    public void Add(string shaft)
-    {
-        pencilParts.Add(shaft);
-    }
-
-    public string ListParts()
-    {
-        var str = string.Empty;
-
-        for (int i = 0; i < pencilParts.Count; i++)
-        {
-            str += pencilParts[i] + ", ";
-        }
-
-        str = str.Remove(str.Length - 2);
-
-        return $"Product parts {str} \n";
-    }
-}
-//директор отвечает только за вполнение шагоов построения в определеной последовательности,
-//и в опредлеенной конфигурации, он необязателен тк клиент сам может упралвятьб староителем
-public class Director
-{
-    private IBuilderPencil builderPencil;
-
-    public IBuilderPencil BuilderPencil
-    {
-        set => builderPencil = value;
-    }
-    //без ластика
-    public void BuildWithoutEraser()
-    {
-        builderPencil.BuildShaft();
-        builderPencil.BuildCase();
-    }
-    public void BuildEraser()
-    {
-        builderPencil.BuildShaft();
-        builderPencil.BuildCase();
-        builderPencil.BuildEraser();
-    }
-}
-
-
-
-//клиентский код создает обьекты строители
-var pencilWoodBuilder = new BuilderWoodPencil();
-
-var pencilPlasticBuilder = new BuilderPlasticPencil();
-//создает обьект диерктора
-var pencilDirector = new Director();
-//затем передает нужный обьект стротеля директору
-pencilDirector.BuilderPencil = pencilPlasticBuilder;
-//и далее диреткор используя предустановки строит определеный карандаш
-pencilDirector.BuildEraser();
-Console.WriteLine(pencilPlasticBuilder.GetPencil().ListParts());
-
-pencilDirector.BuilderPencil = pencilWoodBuilder;
-pencilDirector.BuildWithoutEraser();
-Console.WriteLine(pencilWoodBuilder.GetPencil().ListParts());
-
-//так же можно вызывать класс строителя без использования директора
-pencilWoodBuilder.BuildCase();
-Console.WriteLine(pencilWoodBuilder.GetPencil().ListParts());
-
-по сути: класс конструктора берет пустой обьект продукта, накидывает в него
-элементы и озваращает клас с добавлеными элементами клиенту, так же может существоать класса
-директора который отвечает за предустановаленные пресеты создания продуктов
-
-==
-
---Фабричный метод (Factory Method)
-------------------------------------------
-порождающие паттерн проектирования, коотороый определяет общий интерфейс для созания обьектов(ITransport) через
-асбтсрактный/вирутальный метод (public abstract ITransport Transport())в суперклассе(Logistic),
-позволяя подклассам(SeaLogistic, AirLogistic) изменять тип создаваемых обьектов (SeaTransport ,AirTransport).
-
-когда использовать - когда зарванее неизвестно обььекты каких типов нужно создавать
-- когда система должна быть независимой от процесса создания новых обьектов и при этом расщиряемой
-те в нее можно легко вводить новые классы обььекты которых система должна создаваться
-
-проблема - есть система управления грузовыми перевозками сперва в ней превозятся тольько по морю
-поэтому класс работает с оьбектами класса SeaTransport, вкакойто момент требуется добавить превозки по возуху
-
-решение - паттерн фабричный метод созадет обьекты не напрямую исопльзуя оператор new  а через выбор особого
-фабричногго метода, создавать обьчекты через new будет сам фабричный метод.
-
-namespace Pattern;
-
-//определяет интерфейс классов кторы надо создавать
-public interface ITransport
-{ 
-    public string CompanyName { get; set; }
-    void Operation();
-    
-}
-
-
-//класссы ктороые надо создавать, предствлюящие рализацию класса Itransport их может быть множество
-public class SeaTransport : ITransport
-{
-    public string CompanyName { get; set; }
-
-    public void Operation()
-    {
-        Console.WriteLine($"Доставляется по морю, компанией {CompanyName}");
-    }
-    
-}
-//класссы ктороые надо создавать, предствлюящие рализацию класса Itransport
-public class AirTransport : ITransport
-{
-    public string CompanyName { get; set; }
-
-    public void Operation()
-    {
-        Console.WriteLine($"Доставляется по воздуху {CompanyName}");
-    }
-}
-
-//этот абстакртный класс определяет абстарктный метод который возрващает обьекты интерфейса Transport
-public abstract class Logistic
-{
-    protected Logistic(string name)
-    {
-        NameLogistic = name;
-    }
-
-    public string NameLogistic { get; }
-    //этот метод возварщает бьекты интерфейса ITr...
-    public abstract ITransport Transport();
-}
-
-//класссы ктороые надо создавать, предствлюящие рализацию класса Logistic они определяют кажддый свою
-//реализацию метода Transport(), причем метод Transport() кадждого отдельного класса создателя
-//(в данном случае SeaLogistic) возварщает определенный тип продукта(в данном случае SeaTransport),
-// для каждого конкретногго класса трансспорта опредделяется конкретный класс лигоистики
-public class SeaLogistic : Logistic
-{
-    private string companyName;
-    public SeaLogistic(string name) : base(name)
-    {
-        companyName = name;
-    }
-
-    public override ITransport Transport()
-    {
-        //SeaLogistic определяет какой конкретыный тип тракнспорта ему создаать
-        var sea = new SeaTransport
-        {
-            CompanyName = companyName
-        };
-        return sea;
-    }
-}
-public class AirLogistic : Logistic
-{
-    private string companyName;
-    public AirLogistic(string name) : base(name)
-    {
-        companyName = name;
-    }
-
-    public override ITransport Transport()
-    {
-        var air = new AirTransport
-        {
-            CompanyName = companyName
-        };
-        return air;
-    }
-}
-//определяем класс создателя
-Logistic logistic = new SeaLogistic("морская 1");
-
-//он определяет какой тип троанспорта вернется из метода
-var transport = logistic.Transport();
-//вызываем у опрееленногго транспорта его метод
-transport.Operation();//Доставляется по морю, компанией морская 1
-
-logistic = new AirLogistic("Воздушная 1");
-
-var transport2 = logistic.Transport();
-
-transport.Operation();//Доставляется по морю, компанией морская 1
-
-по сути: есть некий класс (Logistic) ктороый выполняет свою специйфическую 
-фкнцию(оперделяет какой вид трансорпта исопльзуется), часть своей функциональности он делегирует 
-внешнему интерфейсу (public abstract ITransport Transport()) который инсталируется
-через вирутальный или абстаркатный метод этоого класса. наследники этого класса(SeaLogistic,AirLogistic),
- перекрыв этот метод( public override ITransport Transport()) могут вернуть другие реализаци интерфейса,
- ( var air = new AirTransport), используемого основным алгоритмом класа.
-==
-
-
---Прототип (Prototype)
-порождающий паттерн проектирования который повзволяет скопировать обьектыы не вдаваясь в подробности 
-их релаизации
-
-когда использовать - когда конкретный тип создаваемого обьекта должен определятся динамически по время выполнения
--когда нежелятелно создание отдельнлой иерархии классов фабрик для создания обьектов продуктов из парельной иерархии
-классов (как например в абстрактоной фабрике)
-- когда клинирвание обьекта предпочтительнее нежели его создание и инициализация с помощью конструктора, особено 
-когда известно что обьект может принимать неболььшое огранченное число возможных состояний. 
-
-
-проблема - етсь обьект ктороый нужно скопировать,
-
-!решение - для этого нужно создать пустой обьект тогоже класса и поочередно скпировать значения
-полей из старого обьект в новый. ПРОБЛЕМА такого решения - не каждый обьект удастся скопировать
-таким образом, ведь часть состояния может быть привятной, а значит недоступной для остального кода программы,
-ПРОБЛЕМА так же копирующий код станет заувисим от класов копируемых обьектов, ведь чтобы перебрать все поля
-обьекта нужно привязаться к его классу. изза этого вы не сможете кпировать обьекты зная только их интерфейсы,
-а не конкретные класы, также Поскольку классы представляют ссылочные типы,
- то это накладывает некоторые ограничения на их использование. В частности
-
-
-  Person p1 = new Person { Name = "Tom", Age = 23 };
-            Person p2 = p1;//p2.Name = "Tom" В данном случае объекты p1 и p2 будут указывать на один и тот же объект 
-            //в памяти,поэтому изменения свойств в переменной p2 затронут также и переменную p1.
-            p2.Name = "Alice";//как толлько имя запишется по ссылке в оьект р2 оно запишется так же и в обьект р1
-            // тк у них сейчас один адреc, чтобы этого избежать может исопльзоватся копирование оьектов ссылочного 
-            //типа (с сохранением всех даннных первоначального обьекта)
-            Console.WriteLine(p1.Name); // Alice
-
-
-решение - прототип поручает создание копий самим копиируемым обьектам. он выводит общий интрефейс для всех обьектов
-пооддерживающих клонироовения. это позволяет копировть обьекты не привязвыясь к их кнкретнм классам. олбычно такон
-интефрейа имеет всего один мето Clone()
-
-использование клонирвания
-
-Чтобы переменная p2 указывала на новый объект, но со значениями из p1,
- мы можем применить клонирование с помощью реализации интерфейса ICloneable:
-
-public interface ICloneable
-{
-    object Clone();
-}
-            //неглубокое (поверхсностоне копировние)
-            SurfacePerson p3 = new SurfacePerson { Name = "Tom", Age = 23, Work = new Company { Name = "Microsoft" } };
-            SurfacePerson p4 = (SurfacePerson)p3.Clone();
-            p4.Work.Name = "Google";
-            p4.Name = "Alice";
-            Console.WriteLine(p3.Name);//здес MemberwiseClone СРАБОТАЛ тк name это простой тип -> Tom 
-            Console.WriteLine(p3.Work.Name);//здес MemberwiseClone НЕ сработал тк name это сложный тип -> 
-            //Google - а должно быть Microsoft
-
-            //глубоуоке копирование
-            DeepPerson p5 = new DeepPerson { Name = "Tom", Age = 23, Work = new Company { Name = "Microsoft" } };
-            DeepPerson p6 = (DeepPerson)p5.Clone();
-            p6.Work.Name = "Google";
-            p6.Name = "Alice";
-            Console.WriteLine(p5.Name); // Tom
-            Console.WriteLine(p5.Work.Name); //Microsoft
-
-            Console.Read();
-        }
-    }
-    
-    public interface ICloneable //Чтобы переменная p2 указывала на новый объект, но со значениями из p1, мы можем применить клонирование
-                                //с помощью реализации интерфейса ICloneable
-    {
-        object Clone();
-    }
-
-    class Person
-    {
-
-        public string Name { get; set; }
-        public int Age { get; set; }
-    }
-//неглубокое копирование
-    class SurfacePerson : ICloneable//реализуем интерфейс 
-    {
-        
-        public string Name { get; set; }//Поверхностное копирование работает только для свойств, 
-        //представляющих примитивные типы
-        public int Age { get; set; }
-
-        public Company Work { get; set; }//в случае если реализуетсся неглубокое копирвание 
-        //В этом случае при копировании новая копия будет указывать на тот же объект Company
-
-        public object Clone()
-        {
-            return this.MemberwiseClone();//добавляем специальный метод MemberwiseClone(), который возвращает копию объекта,
-                                          //но этот метод реализует неглубокое копирование 
-        }
-    }
-//глубокое копирование
-    class DeepPerson : ICloneable//реализуем интерфейс 
-    {
-        public string Name { get; set; }
-        public int Age { get; set; }
-        public Company Work { get; set; }
-
-        public object Clone()//пр использовании метода клон мы...
-        {
-            
-            Company company = new Company { Name = this.Work.Name };//...вмемсто использоваания метода MemberwiseClone 
-            //мы при создании DeepPerson экземмпляраа создаем новый экземпляр сложного типа и копируем туда
-            // название поля из DeepPerson.Work...
-
-
-            return new DeepPerson
-            {//.. далее мы при создании экземмпляраа DeepPerson создаем новый экземпляр DeepPerson со СКОПИРИОВАНЫМИ 
-                //туда значениями из этого экземпляра,далее в Work мы записываем КОПИЮ из первоначального экземпляра,
-                //чтобы потом ее эту КОПИЮ можно было поменят не за рагивая ОРИГИНАЛ
-                Name = this.Name,
-                Age = this.Age,
-                Work = company
-            };
-        }
-    }
-
-    class Company
-    {
-        public string Name { get; set; }
-    }
-
-
-или так (более наглядно)
---
-
-
-using System.Dynamic;
-
-namespace Pattern;
-
-public class Person
-{
-    public int Age;
-    public DateTime BrithDate;
-    public string Name;
-    public IdInfo IdInfoPerson;
-    private int indexPerson;
-
-    public void SetIndex(int index)
-    {
-        indexPerson = index;
-    }
-    public int GetIndex()
-    {
-        return indexPerson;
-    }
-    //неглубокое копирование 
-    public Person ShallowCopy()
-    {
-        //рабоотает только для примитивыных типов вроде int, string и тд
-        return (Person) MemberwiseClone();
-    }
-
-    //глубокое клонирование
-    public Person DeepCopy()
-    {
-        var clone = (Person) MemberwiseClone();
-        clone.IdInfoPerson = new IdInfo(IdInfoPerson.IdNum);
-        clone.Name = Name;
-        return clone;
-    }
-}
-
-public class IdInfo
-{
-    public int IdNum;
-
-    public IdInfo(int idNum)
-    {
-        IdNum = idNum;
-    }
-}
-
-
-
-
-using System.Threading.Channels;
-using Pattern;
-
-Person p1 = new Person();
-p1.Age = 10;
-p1.BrithDate = Convert.ToDateTime("2000-01-01");
-p1.Name = "Max";
-p1.IdInfoPerson = new IdInfo(34);
-p1.SetIndex(100700);
-
-var p2 = p1;
-var p3 = p1.ShallowCopy();
-p1.Age = 20;
-p1.IdInfoPerson.IdNum = 10;
-p1.SetIndex(400300);
-Console.WriteLine(p2.Age);//p2 берет данные няпрямую по ссылке потоому ту будет 20
-Console.WriteLine(p2.GetIndex());//400300
-Console.WriteLine(p3.Age);//p3 клинирует данные потоому ту будет 10
-Console.WriteLine(p3.GetIndex());//100700
-Console.WriteLine(p3.IdInfoPerson.IdNum);//но при этом используя негулобокое клонирование даные из подклассов 
-//р3 будет брать по ссылке на них
-var p4 = p1.DeepCopy();
-p1.IdInfoPerson.IdNum = 49;//изменим значение в подкласе на 49
-Console.WriteLine(p3.IdInfoPerson.IdNum);//49
-Console.WriteLine(p4.IdInfoPerson.IdNum);//р4 исполььзуя глубокое клоонирование здесь получит 10
-
---singleton--одиночка
-------------------------------------------
-Создает единственный экземпляр своего класса и обеспечивает доступ к нему. 
-Гарантирует существование единственного экземпляра.
-
-Например ведение отладочной информации, реализация сессий, кэш приложения, менеджер печати, доступ к аппаратному обеспечению
-
---минусы 
--Многие части приложения становятся зависимы от него и, косвенно, друг от друга. Это усложняет внесение изменений в дальнейшем.
-Облегчить ситуацию можно используя Внедрение зависимостей.
-
--Приложение становится сложнее тестировать, т.к. данные, полученные от Одиночки, могут быть созданы в другом модуле.
-==
-
---Альтернативой Одиночке является статический класс, который имеет следующие ограничения
-
--он не может быть наследником других классов и реализовывать интерфейсы;
--нельзя создать экземпляр статического класса. Следовательно, его невозможно использовать в качестве параметра или возвращаемого значения.
--статический класс нелзя сериализовать.
-
---Как видно из описания, Одиночка является более универсальным решением. 
-Но если необходимо просто собрать ряд методов "под одной крышей", то для такой задачи лучше подходит статический класс.
-==
-
-public sealed class Service<T> where T : class
-{
-    static T _instance;
-
-    /// <summary>
-    /// Gets global instance of T type.
-    /// </summary>
-    /// <param name="createIfNotExists">If true and instance not exists - new instance will be created.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Get(bool createIfNotExists = true)
-    {
-        if (_instance != null)
-        {
-            return _instance;
-        }
-        if (createIfNotExists)
-        {
-            //Создает экземпляр указанного типа, используя конструктор этого типа без параметров.
-            _instance = (T)Activator.CreateInstance(typeof(T), true);
-        }
-        return _instance;
-    }
-
-    /// <summary>
-    /// Sets global instance of T type.
-    /// </summary>
-    /// <param name="instance">New instance of T type.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Set(T instance)
-    {
-        _instance = instance;
-    }
-}
-
-class MyFancyObject
-{
-    public int A { get; set; }
-    public int b { get; set; }
-
-    public void Get()
-    {
-        Console.WriteLine($"{b} + {A}");
-    }
-}
-
- class Program
-{
-   
-    static void Main(string[] args)
-    {
-        MyFancyObject mFO1 = new();
-        MyFancyObject mFO2 = new();
-
-        mFO1= Service<MyFancyObject>.Get();
-        mFO1.A = 10;
-        mFO1.b = 122;
-        mFO1.A = 18;
-        mFO1.Get(); //122 + 18
-
-        mFO2 = Service<MyFancyObject>.Get();
-        mFO2.A = 1;
-        mFO2.b = 21;
-        mFO2.A = 90;
-        с.Get();//21 + 90 
-        mFO1.Get();//21 + 90 - значния в обьекте mFO1 становятся аналогичны значениям из mFO2 
-        //что отражает концепцию синглтона
-    }
-}
-
---Multition--мультитон--Пул одиночек
-------------------------------------------
-https://andrey.moveax.ru/post/patterns-oop-creational-multiton
-Шаблон "Пул одиночек" позволяет создать определенное число своих экземпляров и предоставляет точку доступа для работы с ними. 
-При этом каждый экземпляр связан с уникальным идентификатором.
-
-Число экземпляров класса может (и даже должно) быть ограничено и они глобальные для всего приложения.
-
-public class Multition
-{
-    //экземпляры класса хранятся в контейнере instance
-    private static readonly ConcurrentDictionary<int, Multition> Instance =
-        new ConcurrentDictionary<int, Multition>();
-
-    private int i = 0;
-
-    //создать самостоятельно экземпляр не возможно, т.к. конструктор закрыт
-    private Multition(int key)//на конструктор возложена обязанность создавать экземпляры в зависимости от индентификатора int key
-    {
-
-    }
-
-    // метод GetInstance() возвращает экземпляр по указанному ключу.
-    public static Multition GetInstance(int key)
-    { 
-        //При этом вызываемый им метод GetOrAdd() проверяет есть ли готовый объект в контейнере и, если такой не найден, создает новый.
-        return Multition.Instance.GetOrAdd(key, (mul) => new Multition(mul));
-    }
-
-    public void Do(int id)
-    {
-        i += 1;
-        Console.WriteLine($"id - {id} Do = {i}");
-    }
-}
-
-public class MyClass
-{
-    //Остается добавить в класс нужную функциональность и использовать его в деле
-    public Multition Multition1 = Multition.GetInstance(1);
-    public Multition Multition2 = Multition.GetInstance(2);
-
-    public void UsingMultition()
-    {
-        Multition1.Do(1);// id - 1 Do = 1
-        Multition2.Do(2);// id - 2 Do = 1
-    }
-}
-
-class Program
-{
-
-    static void Main(string[] args)
-    {
-        MyClass mc = new MyClass();
-        mc.UsingMultition();
-
-        mc.Multition2.Do(2);// id - 2 Do = 2
-        mc.Multition1.Do(1);// id - 1 Do = 2
-    }
-}
-
-==========================================
-
-
---Паттерны структурные--
-------------------------------------------
-
---Адаптер
-------------------------------------------
-позволяет обьектам с несовместимыми интерфейсами рабоать вместе, адаптируя определеннй класс под целевой
-дабы класс клиента мог рабоаоть с этим определенным классом
-
-когда использовать - когда необходим исполььзовать имеющийся клас но его интерфейс не соответвует потребностям
--когда надо исоплльзоват уже сущетвующий класс совместно с другими классами, интерфейсы которыйх несовместимы
-
-проблема - . Допустим, у нас есть путешественник, который путешествует на машине. 
-Но в какой-то момент ему приходится передвигаться по пескам пустыни, где он не может ехать на машине.
- Зато он может использовать для передвижения верблюда. Однако в классе путешественника использование 
-класса верблюда не предусмотрено, поэтому нам надо использовать адаптер
-
-решение- В данном случае в качестве клиента применяется класс Driver, который использует объект ITransport.
- Адаптируемым является класс верблюда Camel, который нужно использовать в качестве объекта ITransport. 
- И адптером служит класс CamelToTransportAdapter.
-
-//интерфейс к которому нужно будет привети вреблюда чтобы он смог быть вызван в драйвере
-//(класс клиент) для раализации своих задач
-interface ITransport
-{
-    void Drive();
-}
-// класс машины который перначально используется клиентом(драйвер реализует метод драйв)
-class Auto : ITransport
-{
-    public void Drive()
-    {
-        Console.WriteLine("Машина едет по дороге");
-    }
-}
-//в классе драйвер не предусмотрено использование верблюда, потому необходимо исопльзовать адаптер
-class Driver
-{
-    //вызываем метод драйв у транспорта
-    public void Travel(ITransport transport)
-    {
-        transport.Drive();
-    }
-}
-// интерфейс животного
-interface IAnimal
-{    void Move();
-}
-// класс верблюда  (не подходит для реализации в классе драйвер без
-// использоваания адаптера или изменеия самого класса драйвер)
-class Camel : IAnimal
-{
-    //если машина ежет то верблюд идет
-    public void Move()
-    {
-        Console.WriteLine("Верблюд идет по пескам пустыни");
-    }
-}
-// Адаптер от Camel к ITransport (создаем класс котороый использует класс верблюда и
-// реализует интерфейс ITransport) те просто позволяет рабоотать с обьектами верблюлда как с обьектами авто
-class CamelToTransportAdapter : ITransport
-{
-    IAnimal camel;
-    public CamelToTransportAdapter(IAnimal c)
-    {
-        camel = c;
-    }
-    
-    //подменяем функционал райв на мов в случае верблюда
-    public void Drive()
-    {
-        camel.Move();
-    }
-}
-
-
-using System.Threading.Channels;
-using Pattern;
-
-Driver driver = new Driver();
-//авто
-ITransport auto = new Auto();
-//драйвер использует обььекты авто для ралиазации задачи перемещения
-driver.Travel(auto);
-//верблюд
-IAnimal camel = new Camel();
-//не удается преборазовать IAnimal в Itransport
-//driver.Travel(camel);
-
-//адаптируем интерфейс верблюда(IAnimal) в интерфейс транспорта (ITransport) чтобы 
-//драйвер мог исопльзовать его
-ITransport camelAdapter = new CamelToTransportAdapter(camel);
-//теперь драйвер может исопльзовать адаптированый под него класс верблюда
-driver.Travel(camelAdapter);
-
-
---Мост
-------------------------------------------
-рездаеляет один или несолько классов на две отдельные иерархии - абстракцию и реализацию, позволяя изменят
-их независимо дпуг от друга. паттерн обьявляет классыы абстакиций и реализаций в отдельных палаельных иерархиях
-классов.
-
-Асбтракция это образнй слоу управления чемто(напрмиер графический интерфейс программы), он не делает работу самостооятельно, а делегирует 
-ее слою Реализации(например АРI). 
-
-Даже если мы отделим абстракцию от конкретных реализаций, то у нас все равно все наследуемые классы будут 
-жестко привязаны к интерфейсу, определяемому в базовом абстрактном классе. Для преодоления жестких связей и служит 
-паттерн Мост.
-
-когда использовать - когда надо избежать постоянной привязки абстаркции к реализации
--когда наряду с реализацией надо измеять и асбтсракцию независимо друг от друга. те изменения в абстаркции не должн 
-привести к измненеиям в реализации.
-
-проблема есть класс приборов который имеет подклассы блок питания и вольтметр, нужно раширить иерархию приборов по 
-внешним интерфейсам например com и ethernet, нго чтобы это обьеденить придется создать 4 комбинации подклассов
-вроде SupplyCom и SupplyEthenet при добавлении новых устройств и интерфейсов колво кобминаций будет расти
-
-корень прооблемы в том что пытаемся расширить классы приборов сразу в двух независимых плоскосях - по виду и по
-интерфейсу именно это и приводит к разрастанию дерева классов
-
-решение - мост предлагает заменить наследование аагрегацией или композицией. для этого нужно выделить одну из 
-независимых плоскойсте (вид приборов и их интерфейс)в отдельную  иеразрхию и ссылатся на обьект этой иерархии, вместо
-хранения его состояния и поведения внутри одного класса.
-
-таки образов можно сдлеать интерфейс отдельным классом с подкласами ком и юзернет. класс приборов полчит ссылку на 
-обьект цвета и асмотжет делегировать ему работу если потербуется. такая связь станет мостом между приборами 
-и интерфейсами
-
-
-namespace Pattern;
-
-public interface IOutConnector
-{
-    string OutConnectorConnect();
-}
-
-class RectangleConnector : IOutConnector
-{
-    public string OutConnectorConnect()
-    {
-        return "Rectangle connector";
-    }
-}
-
-class OvalConnector : IOutConnector
-{
-    public string OutConnectorConnect()
-    {
-        return "Oval connector";    
-    }
-}
-//реализация(IConnectInterface) задает общий интерфейс для всех своих реализаций(ComInterface,GpioInterface и др),
-//все мтоды которые здесь описны будут доступны классау абтсракции(Device) и всех ее поддклассов(Supply и VoltMeter)
-//описывает интерфейс подключения
-public abstract class ConnectedInterface
-{
-    protected IOutConnector outConnector;
-
-    protected ConnectedInterface(IOutConnector outConnector)
-    {
-        this.outConnector = outConnector;
-    }
-
-    public abstract void Connect();
-    public abstract void SendData();
-}
-
-//конкретная реализация
-//описывает какие интерфейсы подключения
-class GpioInterface : ConnectedInterface
-{
-    //содержит платформозависимый код
-    public override void Connect()
-    {
-        Console.WriteLine($"Conect to gpio {outConnector.OutConnectorConnect()}");
-    }
-
-    public override void SendData()
-    {
-        Console.WriteLine($"Send data to gpio ");
-    }
-
-    public GpioInterface(IOutConnector outConnector) : base(outConnector)
-    {
-    }
-}
-//конкретная реализация
-//описывает какие интерфейсы подключения
-class ComInterface : ConnectedInterface
-{
-    //содержит платформозаписимый код
-    public override void Connect()
-    {
-        Console.WriteLine($"Conect to comport {outConnector.OutConnectorConnect()}");
-    }
-
-    public override void SendData()
-    {
-        Console.WriteLine($"Send data to comrort ");
-    }
-
-    public ComInterface(IOutConnector outConnector) : base(outConnector)
-    {
-    }
-}
-//конкретная реализация
-class EthernetInterface : ConnectedInterface
-{
-    public override void Connect()
-    {
-        Console.WriteLine($"Conect to ethernet {outConnector.OutConnectorConnect()}");
-    }
-
-    public override void SendData()
-    {
-        Console.WriteLine($"Send data to ethernet ");
-    }
-
-    public EthernetInterface(IOutConnector outConnector) : base(outConnector)
-    {
-    }
-}
-
-//Abstraction(Абстракция) определяет базовыфй интерфейс и хранит ссылку на обьект Implementor(Реализатор)
-//выполонение операций в абстракции делегируется методам обьекта реализатора
-//описыывает девайс
-public abstract class Device
-{
-    //обьект реализатора (характеристика абстрактный интерфейс подключения)который 
-    protected ConnectedInterface connectedInterface;
-    public ConnectedInterface ConnectedInterface
-    {
-        set => connectedInterface = value;
-    }
-    
-    /// <summary>
-    /// консткрутор для абстрации
-    /// </summary>
-    /// <param name="connectedInterface">сюда записиывается обьект реализатора</param>
-    protected Device(ConnectedInterface connectedInterface)
-    {
-        this.connectedInterface = connectedInterface;
-       
-    }
-
-    //здесь происходити выполннение операций из реализатора 
-    public virtual void DoWork()
-    {
-        connectedInterface.Connect();
-        connectedInterface.SendData();
-    }
-    public abstract void ReceiveData();
-}
-
-//расширеные абстракции содержат различные вариаци управляющей логики
-//работаео с реализациями через общий интерфей реализации
-//описывает какие девайсы
-public class Supply : Device
-{
-   
-
-    public override void ReceiveData()
-    {
-        Console.WriteLine("resieve data about supply");
-    }
-
-    public Supply(ConnectedInterface connectedInterface) : base(connectedInterface)
-    {
-    }
-}
-//оописывает какие девайсы
-public class VoltMeter : Device
-{
-  
-
-    public override void ReceiveData()
-    {
-        Console.WriteLine("resieve data about voltage");
-    }
-
-    public VoltMeter(ConnectedInterface connectedInterface) : base(connectedInterface)
-    {
-    }
-}
-
-
-IOutConnector outConnectorOval = new OvalConnector();
-ConnectedInterface connectedInterfaceComOval = new ComInterface(outConnectorOval);
-Device deviceSupply = new Supply(connectedInterfaceComOval);
-deviceSupply.DoWork();
-deviceSupply.ReceiveData();
-
-//чтобы добаивитьь новый интерф подключения досатоочно просто присвоить в класс 
-//deviceSupply новый интерфейс 
-deviceSupply.ConnectedInterface = new EthernetInterface(new RectangleConnector());
-deviceSupply.DoWork();
-deviceSupply.ReceiveData();
-
-
-Device deviceVolt = new VoltMeter(new EthernetInterface(new OvalConnector()));
-deviceVolt.DoWork();
-deviceVolt.ReceiveData();
-
-IOutConnector outConnectorRectangle = new RectangleConnector();
-ConnectedInterface connectedInterfaceGpioRectangle = new GpioInterface(outConnectorRectangle);
-deviceVolt.ConnectedInterface = connectedInterfaceGpioRectangle;
-deviceVolt.DoWork();
-deviceVolt.ReceiveData();
-
-// Conect to comport Oval connector
-//Send data to comrort
-//resieve data about supply
-//Conect to ethernet Rectangle connector
-//Send data to ethernet
-//resieve data about supply
-//Conect to ethernet Oval connector
-//Send data to ethernet
-//resieve data about voltage
-//Conect to gpio Rectangle connector
-// Send data to gpio
-// resieve data about voltage
-
 ==========================================
 
 --Solid--солид--
@@ -12876,6 +11507,1515 @@ book.Printer = new MyHtlPrinter();
 book.Print();
 
 ==========================================
+
+
+--Паттерны програмирования--patterns--
+------------------------------------------
+--основные понятия для паттернов
+
+------------------------------------------
+--Наследование 
+
+позволяет одному классу (наследнику) унаследовать функционал другого класса (родительского). 
+Нередко отношения наследования еще называют генерализацией или обобщением. 
+Наследование определяет отношение IS A, то есть "является". Например менеджер ЯВЛЯЕТСЯ юзером:
+
+class User
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+ 
+class Manager : User
+{
+    public string Company{ get; set; }
+}
+
+------------------------------------------
+--Реализация 
+предполагает определение интерфейса и его реализация в классах
+(это контракт что какой-то определенный тип обязательно реализует некоторый функционал). 
+Например, имеется интерфейс IMovable с методом Move, который реализуется в классе Car 
+:
+
+public interface IMovable
+{
+    void Move();
+}
+public class Car : IMovable
+{
+    public void Move()
+    {
+        Console.WriteLine("Машина едет");
+    }
+}
+public class Horse : IMovable
+{
+    public void Move()
+    {
+        Console.WriteLine("Лошадть скачет");
+    }
+}
+------------------------------------------
+--Ассоциация 
+это когда один класс включает в себя другой класс в качестве одного из полей. 
+Ассоциация описывается словом «имеет».  имеет двигатель. 
+Например, объект одного типа содержит или использует объект другого типа. Например,
+игрок играет в определенной команде:
+
+class Team
+{
+ 
+}
+class Player
+{
+    public Team Team { get; set; }
+}
+
+Нередко при отношении ассоциации указывается кратность связей. 
+В данном случае единица у Team и звездочка у Player на диаграмме отражает связь 1 ко многим. 
+То есть одна команда будет соответствовать многим игрокам.
+
+------------------------------------------
+--Композиция 
+определяет отношение HAS A, то есть отношение "имеет". Например, в класс автомобиля 
+содержит экземпляр класса электрического двигателя, умирает автомобиль умирает и двигатель:
+
+public class ElectricEngine
+{ }
+ 
+public class Car
+{
+    ElectricEngine engine;
+    public Car()
+    {
+        engine = new ElectricEngine();//это копмозиция, при каждом создании экземпляра типа car мы через
+        // констркутор создаем экземпляр класса ElectricEngine,каждой отдельной машине по отдельному движку
+    }
+}
+При этом класс автомобиля полностью управляет жизненным циклом объекта двигателя. 
+При уничтожении объекта автомобиля в области памяти вместе с ним будет уничтожен и объект двигателя. 
+И в этом плане объект автомобиля является главным, а объект двигателя - зависимой.
+в даном примере двигател не может сущетсвовать отдельно от автомобиля
+------------------------------------------
+--Агрегация 
+От композиции следует отличать агрегацию. Она также предполагает отношение HAS A,
+когда умрет автмобиль engine может жить дальше, и реализуется она иначе
+
+public abstract class Engine
+{ }
+ 
+public class Car
+{
+    Engine engine;//обьявляем обьььект те создаем его
+    public Car(Engine eng)
+    {
+        engine = eng;//присваиваем ссылку на созданый обьект
+    }
+}
+
+При агрегации реализуется слабая связь, то есть в данном случае объекты Car и Engine будут равноправны. 
+В конструктор Car передается ссылка на уже имеющийся объект Engine. 
+И, как правило, определяется ссылка не на конкретный класс, а на абстрактный класс или интерфейс, 
+что увеличивает гибкость программы.
+------------------------------------------
+виды паттернов
+--
+--Порождающие паттерны
+
+Эти паттерны отвечают за удобное и безопасное создание новых объектов или даже целых семейств объектов.
+
+--Абстрактная фабрика (Abstract Factory)
+------------------------------------------
+задает иинтерфейс создания всех доступных типов продуктов, а каждая конкретная реализация фабрики порождает продукты 
+одной из вариаций, клиентский код вызывает методы фабрики для получения продуктов, вместо самостоятельного создания 
+с помощью оператора new, при этом сама фабрика следиит за тем чтобы создать продукт нужной вариации
+
+когда использовать - когда система не должна зависет от способа создания и компоновки новых обьектов
+- когда создаваемые обьекты долджны исопльзоватся вместе и явщяютсся взаимосвязанными
+
+прооблема - в электронном магазине - продаются резистор конденсатор предохранитель ,
+есть несолько вариаций этих  элементов например стили Smd и Dip
+
+задача - найти способ создавать элементы чтобы они сочетались с другими элементами по признаку Smd/Dip, можно
+вносить изменения в существующий код при добавлении новых элементов или семейств(например Sod) в магазин.
+
+решение - создать общие интерфейсы для отдельных продуктов конденсатор, резистор, предохранитель
+
+namespace Pattern;
+
+//интерфейс абстрактной фабирки обьявляет набор методов 
+public interface IAbstractFactory
+{
+    //эти методы возвращают асбтарктные резисторы и тд.эти методы называются семеством и связаны одной темой 
+    //(в данном случае все это радиоэлменты), они могут взаимодейтсовать между собой и иметь вариации
+    //(в данном случае резисторы конденсаторы и предохранители несовместимы)
+    IAbstractResistor CreateResistor();
+    IAbstractCapacitor CreateCapacitor();
+    IAbstractFuse CreateFuse();
+}
+
+//конкретаня фабрика производит семейство элменетов одной вариации (в данном случае smd)
+//фабрика гарнтирует совестимость полученых продуктов,
+class FactorySmd : IAbstractFactory
+{
+    //методы фабрики возварщаюст абстакртные элменты,
+    public IAbstractCapacitor CreateCapacitor()
+    {
+        //при этом внутри мтеода создается экз конкретного элемента(в данном случае SmdCapacitor)
+        return new SmdCapacitor();
+    }
+
+    public IAbstractResistor CreateResistor()
+    {
+        return new SmdResistor();
+    }
+
+    public IAbstractFuse CreateFuse()
+    {
+        return new SmdFuse();
+    }
+}
+
+//каждая вариация фабрикии имеет соответвующую вариацию продукта (те FactorySmd - SmdCapacitor и др,
+//а FactoryDip - DipCapacitor)
+class FactoryDip : IAbstractFactory
+{
+    public IAbstractCapacitor CreateCapacitor()
+    {
+        return new DipCapacitor();
+    }
+
+    public IAbstractResistor CreateResistor()
+    {
+        return new DipResistor();
+    }
+
+    public IAbstractFuse CreateFuse()
+    {
+        return new DipFuse();
+    } 
+}
+#region каждый отдельный элемент семейства должен иметь базовый интрефейс, все вариаци элмента реализуют этот интерфейс 
+public interface IAbstractResistor
+{
+    string Type(string type);
+}
+
+//все продукты могут взаимодействать друг с другом но правильное возмонжно только между одной 
+//и той же вариацией например Smd
+public interface IAbstractCapacitor
+{
+    //IAbstractCapacitor способен работать самостоятельно...
+    string Type(string type);
+ //...но также и взаимодействовать с прдуктами Fuse той же вариации те например Smd 
+    string AnotherUsefulType(IAbstractFuse collaborator);
+}
+
+public interface IAbstractFuse
+{
+    string Type(string type);
+}
+
+#endregion
+
+#region конкретные элементы создаются соответсующими фабриками эти будут созданы с помощью DipFactory
+
+class DipFuse : IAbstractFuse
+{
+
+    public string Type(string type)
+    {
+        return "Это предохранитьель в dip корпусе";
+    }
+}
+
+class DipResistor : IAbstractResistor
+{
+
+    public string Type(string type)
+    {
+        return "Это резистор в dip корпусе";
+    }
+}
+
+class DipCapacitor : IAbstractCapacitor
+{
+
+    public string Type(string type)
+    {
+        return "Это конденсатор в dip корпусе";
+    }
+
+    //элемент DipCapasitor может работать корректно только с DipFuse темнеменее он принимает любой экземпляр 
+    //IAbstractFuse в качестве аргумента
+    public string AnotherUsefulType(IAbstractFuse collaborator)
+    {
+        var result = collaborator.Type("");
+        return $"Это коллаборация DipCapasitor и {result}";
+    }
+}
+
+
+#endregion
+
+#region конкретные элементы создаются соответсующими фабриками эти будут созданы с помощью SmdFactory 
+
+class SmdFuse : IAbstractFuse
+{
+
+    public string Type(string type)
+    {
+        return "Это предохранитель в smd корпусе";
+    }
+}
+
+class SmdResistor : IAbstractResistor
+{
+
+    public string Type(string type)
+    {
+        return "Это резистор в smd корпусе";
+    }
+}
+
+class SmdCapacitor : IAbstractCapacitor
+{
+
+    public string Type(string type)
+    {
+        return "Это конденсатор в smd корпусе";
+    }
+
+    //элемент SmdCapasitor может работать корректно только с SmdFuse темнеменее он принимает любой экземпляр 
+    //IAbstractFuse в качестве аргумента
+    public string AnotherUsefulType(IAbstractFuse collaborator)
+    {
+        var result = collaborator.Type("");
+        return $"Это коллаборация DipCapasitor и {result}";
+    }
+}
+
+#endregion
+
+public class Client
+{
+    //фабрика записаная сюда будет решать какой тип элмента(Smd или Dip) вернут ее методы
+    public void ClientMethod(IAbstractFactory factory)
+    {
+        var capacitor = factory.CreateCapacitor();
+        var fuse = factory.CreateFuse();
+        var resistor = factory.CreateResistor();
+
+        Console.WriteLine(capacitor.Type(""));
+        Console.WriteLine(capacitor.AnotherUsefulType(fuse));
+        Console.WriteLine(resistor.Type(""));
+    }
+}
+
+
+using Pattern;
+
+Client client = new Client();
+// Клиентский код может работать с любым конкретным классом фабрики.
+
+client.ClientMethod(new FactorySmd());
+Console.WriteLine();
+
+client.ClientMethod(new FactoryDip());
+
+
+Это конденсатор в smd корпусе
+Это коллаборация DipCapasitor и Это предохранитель в smd корпусе
+Это резистор в smd корпусе
+
+Это конденсатор в dip корпусе
+Это коллаборация DipCapasitor и Это предохранитьель в dip корпусе
+Это резистор в dip корпусе
+
+по сути: класс/интерфейс не содержащий собственной логики(public interface IAbstractFactory),
+все его методы (IAbstractResistor CreateResistor(),
+IAbstractCapacitor CreateCapacitor(),IAbstractFuse CreateFuse()) возварщают экземпляры других 
+интерфейсов(IAbstractResistor,IAbstractCapacitor,IAbstractFuse) и вызыываются внешними копонентами
+(DipFuse и др). этот паттер позволяет подменив реализацию одногго иинтерфейса(IAbstractFactory), 
+подменитиь набоор реализаций ограниченого множества интерфейсов(FactorySmd,FactoryDip). 
+
+==
+
+--Строитель (Builder)
+это порождающий паттер проектировния, который позволяет создавать сложные обьекты пошаговою. 
+дает возможность использовать один и тот же код строительства для получения разных представлений обьектов
+- сложный обьект требующий кропотливой пошаговой инициализации множества полей
+и вложеннх обьектов. 
+код инициализации таких обьектов обычно спрятан внутри монструозногго констурктора с десятком параметров. 
+либо, что еше хуже распылен по всему клиенсткеому коду. 
+
+когда использовать - когда процесс создания нового объекта не должен зависеть от того, 
+из каких частей этот объект состоит и как эти части связаны между собой
+-когда необходимо обеспечить получение различных вариаций объекта в процессе его создания
+
+прооблема - как создать объект дом, нужно соптаить 4 стены установить двери, всатвить пару окон и положить 
+крышу. но чо если требутеся дом помбольше, имеющий сад, бассейн, джакузи и прочее добро.
+
+!решение - расширить клас дом, создвая подклассы для всех комбинаций параметров дома, ПРОБЛЕМА такого 
+решения это громадное колво классов которые придется создать. каждый новый парметр, вроде цвета обоев или 
+материала кровли, заставит создать все больше и больше класов для перечисления всех восзможных вариантов.
+
+!решение -  или можно создать гиганский констурктор с множеством парамтеров, но тогда придется в в случае
+если например у дома нет басейна ставить в этот парамтер null
+
+решение - можно вывести создаение обььекта за пределы его сообственного класса, поручив это отдельным
+обьектам- строителям они разобьт контсруирование обьекта на отдельные шаги 
+(построить стены, вставит двери и тд), чтобы моздадть обьект, нужно поочередно вызывать метооды строоителя.
+
+причем можно запускат только те шаги которые нужна для производства дома текущей конфигурации.
+
+приэтом даже один и тот же шаг строительства может иметь разные вариации
+(деревяный дом - деревянные стены, кирпичный дом - кирпичные стены). в этом случае моожно создать несольтко
+строитиелей выполняющих оддни и те же шаги по-разному. 
+
+namespace Pattern;
+
+//интерфейс или абстрактный класс обьявляет создающие методы для чайстей обьектов
+//продуктов
+public interface IBuilderPencil
+{
+    /// <summary>
+    /// создаем стрержень
+    /// </summary>
+    public abstract void BuildShaft();
+
+    /// <summary>
+    /// создаем корпус 
+    /// </summary>
+    public abstract void BuildCase();
+
+    /// <summary>
+    /// создаем стриралку
+    /// </summary>
+    public abstract void BuildEraser();
+}
+
+//классы конкретного строителя следуют интерффейсу строителя и предоостявляют 
+//конкретные реализаци шагов построения ваша программа должна иметь несолтко 
+//вариантов строителелй реализованных по разному
+public class BuilderPlasticPencil : IBuilderPencil
+{
+    //обьект каарндаша с которым будут производится манипуляции
+    public Pencil pencil { get; private set; }
+
+    //создать новый (пустой) экземпляр обьекта который мы будем строить с 
+    // помощьью методов ниже
+    public BuilderPlasticPencil()
+    {
+        CreatePencil();
+    }
+
+    //метод создающий новый экземпляр
+    protected void CreatePencil()
+    {
+        pencil = new Pencil();
+    }
+
+    #region методы стротели для экземпляра класса который был создан выше
+
+    public void BuildShaft()
+    {
+        pencil.Add("Shaft");
+    }
+
+    public void BuildCase()
+    {
+        pencil.Add($"Case in plastic");
+    }
+
+    public void BuildEraser()
+    {
+        pencil.Add("Earser");
+    }
+
+    #endregion
+
+    //конкретный строители должны предоставит собственне методы получения результатов
+    //изза того что различне типы строителей могут создавать соверщено разные продукты
+    //с разными интерфейсами.
+    
+    //метод возварщающий результат - построенный обьект
+    public Pencil GetPencil()
+    {
+        var result = pencil;
+        //обычно ппосле возварщения результата клиенту, экземпляр строителя
+        //должен быть готов к созданию нового продукта, но неообязательно
+        CreatePencil();
+        return result;
+    }
+}
+
+public class BuilderWoodPencil : IBuilderPencil
+{
+    //обьект каарндаша с которым будут производится манипуляции
+    public Pencil pencil { get; private set; }
+
+    //создать новый (пустой) экземпляр обьекта который мы будем строить с 
+    // помощьью методов ниже
+    public BuilderWoodPencil()
+    {
+        CreatePencil();
+    }
+
+    //метод создающий новый экземпляр
+    protected void CreatePencil()
+    {
+        pencil = new Pencil();
+    }
+    
+    public void BuildShaft()
+    {
+        pencil.Add("Shaft");
+    }
+
+    public void BuildCase()
+    {
+        pencil.Add($"Case in wood");
+    }
+
+    public void BuildEraser()
+    {
+        pencil.Add("Earser");
+    }
+
+    public Pencil GetPencil()
+    {
+        var result = pencil;
+        CreatePencil();
+        return result;
+    }
+}
+
+public class Pencil
+{
+    private List<string> pencilParts = new();
+
+    public void Add(string shaft)
+    {
+        pencilParts.Add(shaft);
+    }
+
+    public string ListParts()
+    {
+        var str = string.Empty;
+
+        for (int i = 0; i < pencilParts.Count; i++)
+        {
+            str += pencilParts[i] + ", ";
+        }
+
+        str = str.Remove(str.Length - 2);
+
+        return $"Product parts {str} \n";
+    }
+}
+//директор отвечает только за вполнение шагоов построения в определеной последовательности,
+//и в опредлеенной конфигурации, он необязателен тк клиент сам может упралвятьб староителем
+public class Director
+{
+    private IBuilderPencil builderPencil;
+
+    public IBuilderPencil BuilderPencil
+    {
+        set => builderPencil = value;
+    }
+    //без ластика
+    public void BuildWithoutEraser()
+    {
+        builderPencil.BuildShaft();
+        builderPencil.BuildCase();
+    }
+    public void BuildEraser()
+    {
+        builderPencil.BuildShaft();
+        builderPencil.BuildCase();
+        builderPencil.BuildEraser();
+    }
+}
+
+
+
+//клиентский код создает обьекты строители
+var pencilWoodBuilder = new BuilderWoodPencil();
+
+var pencilPlasticBuilder = new BuilderPlasticPencil();
+//создает обьект диерктора
+var pencilDirector = new Director();
+//затем передает нужный обьект стротеля директору
+pencilDirector.BuilderPencil = pencilPlasticBuilder;
+//и далее диреткор используя предустановки строит определеный карандаш
+pencilDirector.BuildEraser();
+Console.WriteLine(pencilPlasticBuilder.GetPencil().ListParts());
+
+pencilDirector.BuilderPencil = pencilWoodBuilder;
+pencilDirector.BuildWithoutEraser();
+Console.WriteLine(pencilWoodBuilder.GetPencil().ListParts());
+
+//так же можно вызывать класс строителя без использования директора
+pencilWoodBuilder.BuildCase();
+Console.WriteLine(pencilWoodBuilder.GetPencil().ListParts());
+
+по сути: класс конструктора берет пустой обьект продукта, накидывает в него
+элементы и озваращает клас с добавлеными элементами клиенту, так же может существоать класса
+директора который отвечает за предустановаленные пресеты создания продуктов
+
+==
+
+--Фабричный метод (Factory Method)
+------------------------------------------
+порождающие паттерн проектирования, коотороый определяет общий интерфейс для созания обьектов(ITransport) через
+асбтсрактный/вирутальный метод (public abstract ITransport Transport())в суперклассе(Logistic),
+позволяя подклассам(SeaLogistic, AirLogistic) изменять тип создаваемых обьектов (SeaTransport ,AirTransport).
+
+когда использовать - когда зарванее неизвестно обььекты каких типов нужно создавать
+- когда система должна быть независимой от процесса создания новых обьектов и при этом расщиряемой
+те в нее можно легко вводить новые классы обььекты которых система должна создаваться
+
+проблема - есть система управления грузовыми перевозками сперва в ней превозятся тольько по морю
+поэтому класс работает с оьбектами класса SeaTransport, вкакойто момент требуется добавить превозки по возуху
+
+решение - паттерн фабричный метод созадет обьекты не напрямую исопльзуя оператор new  а через выбор особого
+фабричногго метода, создавать обьчекты через new будет сам фабричный метод.
+
+namespace Pattern;
+
+//определяет интерфейс классов кторы надо создавать
+public interface ITransport
+{ 
+    public string CompanyName { get; set; }
+    void Operation();
+    
+}
+
+
+//класссы ктороые надо создавать, предствлюящие рализацию класса Itransport их может быть множество
+public class SeaTransport : ITransport
+{
+    public string CompanyName { get; set; }
+
+    public void Operation()
+    {
+        Console.WriteLine($"Доставляется по морю, компанией {CompanyName}");
+    }
+    
+}
+//класссы ктороые надо создавать, предствлюящие рализацию класса Itransport
+public class AirTransport : ITransport
+{
+    public string CompanyName { get; set; }
+
+    public void Operation()
+    {
+        Console.WriteLine($"Доставляется по воздуху {CompanyName}");
+    }
+}
+
+//этот абстакртный класс определяет абстарктный метод который возрващает обьекты интерфейса Transport
+public abstract class Logistic
+{
+    protected Logistic(string name)
+    {
+        NameLogistic = name;
+    }
+
+    public string NameLogistic { get; }
+    //этот метод возварщает бьекты интерфейса ITransport...
+    public abstract ITransport Transport();
+}
+
+//класссы ктороые надо создавать, предствлюящие рализацию класса Logistic они определяют кажддый свою
+//реализацию метода Transport(), причем метод Transport() кадждого отдельного класса создателя
+//(в данном случае SeaLogistic) возварщает определенный тип продукта(в данном случае SeaTransport),
+//для каждого конкретногго класса трансспорта определяется конкретный класс лигоистики
+public class SeaLogistic : Logistic
+{
+    private string companyName;
+    public SeaLogistic(string name) : base(name)
+    {
+        companyName = name;
+    }
+
+    public override ITransport Transport()
+    {
+        //SeaLogistic определяет какой конкретыный тип тракнспорта ему создаать
+        var sea = new SeaTransport
+        {
+            CompanyName = companyName
+        };
+        return sea;
+    }
+}
+public class AirLogistic : Logistic
+{
+    private string companyName;
+    public AirLogistic(string name) : base(name)
+    {
+        companyName = name;
+    }
+
+    public override ITransport Transport()
+    {
+        var air = new AirTransport
+        {
+            CompanyName = companyName
+        };
+        return air;
+    }
+}
+//определяем класс создателя
+Logistic logistic = new SeaLogistic("морская 1");
+
+//он определяет какой тип троанспорта вернется из метода
+var transport = logistic.Transport();
+//вызываем у опрееленногго транспорта его метод
+transport.Operation();//Доставляется по морю, компанией морская 1
+
+logistic = new AirLogistic("Воздушная 1");
+
+var transport2 = logistic.Transport();
+
+transport.Operation();//Доставляется по морю, компанией морская 1
+
+по сути: есть некий класс (Logistic) ктороый выполняет свою специйфическую 
+фкнцию(оперделяет какой вид трансорпта исопльзуется), часть своей функциональности он делегирует 
+внешнему интерфейсу (public abstract ITransport Transport()) который инсталируется
+через вирутальный или абстаркатный метод этоого класса. наследники этого класса(SeaLogistic,AirLogistic),
+ перекрыв этот метод( public override ITransport Transport()) могут вернуть другие реализаци интерфейса,
+ ( var air = new AirTransport), используемого основным алгоритмом класа.
+==
+
+
+--Прототип (Prototype)
+порождающий паттерн проектирования который повзволяет скопировать обьектыы не вдаваясь в подробности 
+их релаизации
+
+когда использовать - когда конкретный тип создаваемого обьекта должен определятся динамически по время выполнения
+-когда нежелятелно создание отдельнлой иерархии классов фабрик для создания обьектов продуктов из парельной иерархии
+классов (как например в абстрактоной фабрике)
+-когда клинирвание обьекта предпочтительнее нежели его создание и инициализация с помощью конструктора, особено 
+когда известно что обьект может принимать неболььшое огранченное число возможных состояний. 
+
+
+проблема - етсь обьект ктороый нужно скопировать,
+
+!решение - для этого нужно создать пустой обьект тогоже класса и поочередно скпировать значения
+полей из старого обьект в новый. ПРОБЛЕМА такого решения - не каждый обьект удастся скопировать
+таким образом, ведь часть состояния может быть привятной, а значит недоступной для остального кода программы,
+ПРОБЛЕМА так же копирующий код станет заувисим от класов копируемых обьектов, ведь чтобы перебрать все поля
+обьекта нужно привязаться к его классу. изза этого вы не сможете кпировать обьекты зная только их интерфейсы,
+а не конкретные класы, также Поскольку классы представляют ссылочные типы,
+ то это накладывает некоторые ограничения на их использование. В частности
+
+
+  Person p1 = new Person { Name = "Tom", Age = 23 };
+            Person p2 = p1;//p2.Name = "Tom" В данном случае объекты p1 и p2 будут указывать на один и тот же объект 
+            //в памяти,поэтому изменения свойств в переменной p2 затронут также и переменную p1.
+            p2.Name = "Alice";//как толлько имя запишется по ссылке в оьект р2 оно запишется так же и в обьект р1
+            // тк у них сейчас один адреc, чтобы этого избежать может исопльзоватся копирование оьектов ссылочного 
+            //типа (с сохранением всех даннных первоначального обьекта)
+            Console.WriteLine(p1.Name); // Alice
+
+
+решение - прототип поручает создание копий самим копиируемым обьектам. он выводит общий интрефейс для всех обьектов
+пооддерживающих клонироовения. это позволяет копировть обьекты не привязвыясь к их кнкретнм классам. олбычно такон
+интефрейа имеет всего один мето Clone()
+
+использование клонирвания
+
+Чтобы переменная p2 указывала на новый объект, но со значениями из p1,
+ мы можем применить клонирование с помощью реализации интерфейса ICloneable:
+
+
+      
+    
+    public interface ICloneable //Чтобы переменная p2 указывала на новый объект, но со значениями из p1,
+    // мы можем применить клонирование с помощью реализации интерфейса ICloneable
+    {
+        object Clone();
+    }
+
+    class Person
+    {
+
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+//неглубокое копирование
+    class SurfacePerson : ICloneable//реализуем интерфейс 
+    {
+        
+        public string Name { get; set; }//Поверхностное копирование работает только для свойств, 
+        //представляющих примитивные типы
+        public int Age { get; set; }
+
+        public Company Work { get; set; }//в случае если реализуетсся неглубокое копирвание 
+        //В этом случае при копировании новая копия будет указывать на тот же объект Company
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();//добавляем специальный метод MemberwiseClone(), который возвращает копию объекта,
+                                          //но этот метод реализует неглубокое копирование 
+        }
+    }
+//глубокое копирование
+    class DeepPerson : ICloneable//реализуем интерфейс 
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public Company Work { get; set; }
+
+        public object Clone()//пр использовании метода клон мы...
+        {
+            
+            Company company = new Company { Name = this.Work.Name };//...вмемсто использоваания метода MemberwiseClone 
+            //мы при создании DeepPerson экземмпляраа создаем новый экземпляр сложного типа и копируем туда
+            // название поля из DeepPerson.Work...
+
+
+            return new DeepPerson
+            {//.. далее мы при создании экземмпляраа DeepPerson создаем новый экземпляр DeepPerson со СКОПИРИОВАНЫМИ 
+                //туда значениями из этого экземпляра,далее в Work мы записываем КОПИЮ из первоначального экземпляра,
+                //чтобы потом ее эту КОПИЮ можно было поменят не за рагивая ОРИГИНАЛ
+                Name = this.Name,
+                Age = this.Age,
+                Work = company
+            };
+        }
+    }
+
+    class Company
+    {
+        public string Name { get; set; }
+    }
+
+//неглубокое (поверхсностоне копировние)
+SurfacePerson p3 = new SurfacePerson { Name = "Tom", Age = 23, Work = new Company { Name = "Microsoft" } };
+SurfacePerson p4 = (SurfacePerson)p3.Clone();
+p4.Work.Name = "Google";
+p4.Name = "Alice";
+Console.WriteLine(p3.Name);//здес MemberwiseClone СРАБОТАЛ тк name это простой тип -> Tom 
+Console.WriteLine(p3.Work.Name);//здес MemberwiseClone НЕ сработал тк name это сложный тип -> 
+//Google - а должно быть Microsoft
+
+//глубоуоке копирование
+DeepPerson p5 = new DeepPerson { Name = "Tom", Age = 23, Work = new Company { Name = "Microsoft" } };
+DeepPerson p6 = (DeepPerson)p5.Clone();
+p6.Work.Name = "Google";
+p6.Name = "Alice";
+Console.WriteLine(p5.Name); // Tom
+Console.WriteLine(p5.Work.Name); //Microsoft
+
+Console.Read();
+
+
+или так (более наглядно)
+--
+
+using System.Dynamic;
+
+namespace Pattern;
+
+public class Person
+{
+    public int Age;
+    public DateTime BrithDate;
+    public string Name;
+    public IdInfo IdInfoPerson;
+    private int indexPerson;
+
+    public void SetIndex(int index)
+    {
+        indexPerson = index;
+    }
+    public int GetIndex()
+    {
+        return indexPerson;
+    }
+    //неглубокое копирование 
+    public Person ShallowCopy()
+    {
+        //рабоотает только для примитивыных типов вроде int, string и тд
+        return (Person) MemberwiseClone();
+    }
+
+    //глубокое клонирование
+    public Person DeepCopy()
+    {
+        var clone = (Person) MemberwiseClone();
+        clone.IdInfoPerson = new IdInfo(IdInfoPerson.IdNum);
+        clone.Name = Name;
+        return clone;
+    }
+}
+
+public class IdInfo
+{
+    public int IdNum;
+
+    public IdInfo(int idNum)
+    {
+        IdNum = idNum;
+    }
+}
+
+
+
+
+using System.Threading.Channels;
+using Pattern;
+
+Person p1 = new Person();
+p1.Age = 10;
+p1.BrithDate = Convert.ToDateTime("2000-01-01");
+p1.Name = "Max";
+p1.IdInfoPerson = new IdInfo(34);
+p1.SetIndex(100700);
+
+var p2 = p1;
+var p3 = p1.ShallowCopy();
+p1.Age = 20;
+p1.IdInfoPerson.IdNum = 10;
+p1.SetIndex(400300);
+Console.WriteLine(p2.Age);//p2 берет данные няпрямую по ссылке потоому ту будет 20
+Console.WriteLine(p2.GetIndex());//400300
+Console.WriteLine(p3.Age);//p3 клинирует данные потоому ту будет 10
+Console.WriteLine(p3.GetIndex());//100700
+Console.WriteLine(p3.IdInfoPerson.IdNum);//но при этом используя негулобокое клонирование даные из подклассов 
+//р3 будет брать по ссылке на них
+var p4 = p1.DeepCopy();
+p1.IdInfoPerson.IdNum = 49;//изменим значение в подкласе на 49
+Console.WriteLine(p3.IdInfoPerson.IdNum);//49
+Console.WriteLine(p4.IdInfoPerson.IdNum);//р4 исполььзуя глубокое клоонирование здесь получит 10
+
+--singleton--одиночка
+------------------------------------------
+Создает единственный экземпляр своего класса и обеспечивает доступ к нему. 
+Гарантирует существование единственного экземпляра.
+
+Например ведение отладочной информации, реализация сессий, кэш приложения, менеджер печати, доступ к аппаратному 
+обеспечению.
+
+--минусы 
+-Многие части приложения становятся зависимы от него и, косвенно, друг от друга. Это усложняет внесение изменений в д
+альнейшем. Облегчить ситуацию можно используя Внедрение зависимостей.
+
+-Приложение становится сложнее тестировать, т.к. данные, полученные от Одиночки, могут быть созданы в другом модуле.
+==
+
+--Альтернативой Одиночке является статический класс, который имеет следующие ограничения
+
+-он не может быть наследником других классов и реализовывать интерфейсы;
+-нельзя создать экземпляр статического класса. Следовательно, его невозможно использовать в качестве параметра или 
+возвращаемого значения.
+-статический класс нелзя сериализовать.
+
+--Как видно из описания, Одиночка является более универсальным решением. 
+Но если необходимо просто собрать ряд методов "под одной крышей", то для такой задачи лучше подходит статический класс.
+==
+
+public sealed class Service<T> where T : class
+{
+    static T _instance;
+
+    /// <summary>
+    /// Gets global instance of T type.
+    /// </summary>
+    /// <param name="createIfNotExists">If true and instance not exists - new instance will be created.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Get(bool createIfNotExists = true)
+    {
+        if (_instance != null)
+        {
+            return _instance;
+        }
+        if (createIfNotExists)
+        {
+            //Создает экземпляр указанного типа, используя конструктор этого типа без параметров.
+            _instance = (T)Activator.CreateInstance(typeof(T), true);
+        }
+        return _instance;
+    }
+
+    /// <summary>
+    /// Sets global instance of T type.
+    /// </summary>
+    /// <param name="instance">New instance of T type.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Set(T instance)
+    {
+        _instance = instance;
+    }
+}
+
+class MyFancyObject
+{
+    public int A { get; set; }
+    public int b { get; set; }
+
+    public void Get()
+    {
+        Console.WriteLine($"{b} + {A}");
+    }
+}
+
+ class Program
+{
+   
+    static void Main(string[] args)
+    {
+        MyFancyObject mFO1 = new();
+        MyFancyObject mFO2 = new();
+
+        mFO1= Service<MyFancyObject>.Get();
+        mFO1.A = 10;
+        mFO1.b = 122;
+        mFO1.A = 18;
+        mFO1.Get(); //122 + 18
+
+        mFO2 = Service<MyFancyObject>.Get();
+        mFO2.A = 1;
+        mFO2.b = 21;
+        mFO2.A = 90;
+        с.Get();//21 + 90 
+        mFO1.Get();//21 + 90 - значния в обьекте mFO1 становятся аналогичны значениям из mFO2 
+        //что отражает концепцию синглтона
+    }
+}
+
+--Multition--мультитон--Пул одиночек
+------------------------------------------
+https://andrey.moveax.ru/post/patterns-oop-creational-multiton
+Шаблон "Пул одиночек" позволяет создать определенное число своих экземпляров и предоставляет точку доступа для работы
+с ними. 
+При этом каждый экземпляр связан с уникальным идентификатором.
+
+Число экземпляров класса может (и даже должно) быть ограничено и они глобальные для всего приложения.
+
+public class Multition
+{
+    //экземпляры класса хранятся в контейнере instance
+    private static readonly ConcurrentDictionary<int, Multition> Instance =
+        new ConcurrentDictionary<int, Multition>();
+
+    private int i = 0;
+
+    //создать самостоятельно экземпляр не возможно, т.к. конструктор закрыт
+    private Multition(int key)//на конструктор возложена обязанность создавать экземпляры в зависимости от индентификатора int key
+    {
+
+    }
+
+    // метод GetInstance() возвращает экземпляр по указанному ключу.
+    public static Multition GetInstance(int key)
+    { 
+        //При этом вызываемый им метод GetOrAdd() проверяет есть ли готовый объект в контейнере и, если такой не найден, создает новый.
+        return Multition.Instance.GetOrAdd(key, (mul) => new Multition(mul));
+    }
+
+    public void Do(int id)
+    {
+        i += 1;
+        Console.WriteLine($"id - {id} Do = {i}");
+    }
+}
+
+public class MyClass
+{
+    //Остается добавить в класс нужную функциональность и использовать его в деле
+    public Multition Multition1 = Multition.GetInstance(1);
+    public Multition Multition2 = Multition.GetInstance(2);
+
+    public void UsingMultition()
+    {
+        Multition1.Do(1);// id - 1 Do = 1
+        Multition2.Do(2);// id - 2 Do = 1
+    }
+}
+
+class Program
+{
+
+    static void Main(string[] args)
+    {
+        MyClass mc = new MyClass();
+        mc.UsingMultition();
+
+        mc.Multition2.Do(2);// id - 2 Do = 2
+        mc.Multition1.Do(1);// id - 1 Do = 2
+    }
+}
+
+==========================================
+
+
+--Паттерны структурные--
+------------------------------------------
+
+--Адаптер
+------------------------------------------
+позволяет обьектам с несовместимыми интерфейсами рабоать вместе, адаптируя определеннй класс под целевой
+дабы класс клиента мог рабоаоть с этим определенным классом
+
+когда использовать - когда необходим исполььзовать имеющийся клас но его интерфейс не соответвует потребностям
+-когда надо исоплльзоват уже сущетвующий класс совместно с другими классами, интерфейсы которыйх несовместимы
+
+проблема - . Допустим, у нас есть путешественник, который путешествует на машине. 
+Но в какой-то момент ему приходится передвигаться по пескам пустыни, где он не может ехать на машине.
+ Зато он может использовать для передвижения верблюда. Однако в классе путешественника использование 
+класса верблюда не предусмотрено, поэтому нам надо использовать адаптер
+
+решение- В данном случае в качестве клиента применяется класс Driver, который использует объект ITransport.
+ Адаптируемым является класс верблюда Camel, который нужно использовать в качестве объекта ITransport. 
+ И адптером служит класс CamelToTransportAdapter.
+
+//интерфейс к которому нужно будет привети вреблюда чтобы он смог быть вызван в драйвере
+//(класс клиент) для реализации своих задач
+interface ITransport
+{
+    void Drive();
+}
+// класс машины который перначально используется клиентом(драйвер реализует метод драйв)
+class Auto : ITransport
+{
+    public void Drive()
+    {
+        Console.WriteLine("Машина едет по дороге");
+    }
+}
+//в классе драйвер не предусмотрено использование верблюда, потому необходимо исопльзовать адаптер
+class Driver
+{
+    //вызываем метод драйв у транспорта
+    public void Travel(ITransport transport)
+    {
+        transport.Drive();
+    }
+}
+// интерфейс животного
+interface IAnimal
+{    void Move();
+}
+// класс верблюда  (не подходит для реализации в классе драйвер без
+// использоваания адаптера или изменеия самого класса драйвер)
+class Camel : IAnimal
+{
+    //если машина ежет то верблюд идет
+    public void Move()
+    {
+        Console.WriteLine("Верблюд идет по пескам пустыни");
+    }
+}
+// Адаптер от Camel к ITransport (создаем класс котороый использует класс верблюда и
+// реализует интерфейс ITransport) те просто позволяет рабоотать с обьектами верблюлда как с обьектами авто
+class CamelToTransportAdapter : ITransport
+{
+    IAnimal camel;
+    public CamelToTransportAdapter(IAnimal c)
+    {
+        camel = c;
+    }
+    
+    //подменяем функционал райв на мов в случае верблюда
+    public void Drive()
+    {
+        camel.Move();
+    }
+}
+
+
+using System.Threading.Channels;
+using Pattern;
+
+Driver driver = new Driver();
+//авто
+ITransport auto = new Auto();
+//драйвер использует обььекты авто для ралиазации задачи перемещения
+driver.Travel(auto);
+//верблюд
+IAnimal camel = new Camel();
+//не удается преборазовать IAnimal в Itransport
+//driver.Travel(camel);
+
+//адаптируем интерфейс верблюда(IAnimal) в интерфейс транспорта (ITransport) чтобы 
+//драйвер мог исопльзовать его
+ITransport camelAdapter = new CamelToTransportAdapter(camel);
+//теперь драйвер может исопльзовать адаптированый под него класс верблюда
+driver.Travel(camelAdapter);
+
+
+--Мост
+------------------------------------------
+рездаеляет один или несолько классов на две отдельные иерархии - абстракцию и реализацию, позволяя изменят
+их независимо друг от друга. паттерн обьявляет классыы абстакиций и реализаций в отдельных палаельных иерархиях
+классов.
+
+Асбтракция это образнй слой управления чемто(напрмиер графический интерфейс программы), он не делает работу 
+самостооятельно, а делегирует ее слою Реализации(например АРI). 
+
+Даже если мы отделим абстракцию от конкретных реализаций, то у нас все равно все наследуемые классы будут 
+жестко привязаны к интерфейсу, определяемому в базовом абстрактном классе. Для преодоления жестких связей и служит 
+паттерн Мост.
+
+когда использовать - когда надо избежать постоянной привязки абстаркции к реализации
+-когда наряду с реализацией надо измеять и асбтсракцию независимо друг от друга. те изменения в абстаркции не должн 
+привести к измненеиям в реализации.
+
+проблема есть класс приборов который имеет подклассы блок питания и вольтметр, нужно раширить иерархию приборов по 
+внешним интерфейсам например com и ethernet, нго чтобы это обьеденить придется создать 4 комбинации подклассов
+вроде SupplyCom и SupplyEthenet при добавлении новых устройств и интерфейсов колво кобминаций будет расти
+
+корень прооблемы в том что пытаемся расширить классы приборов сразу в двух независимых плоскосях - по виду и по
+интерфейсу именно это и приводит к разрастанию дерева классов
+
+решение - мост предлагает заменить наследование аагрегацией или композицией. для этого нужно выделить одну из 
+независимых плоскойсте (вид приборов и их интерфейс)в отдельную  иеразрхию и ссылатся на обьект этой иерархии, вместо
+хранения его состояния и поведения внутри одного класса.
+
+таки образов можно сдлеать интерфейс отдельным классом с подкласами ком и юзернет. класс приборов полчит ссылку на 
+обьект цвета и асмотжет делегировать ему работу если потербуется. такая связь станет мостом между приборами 
+и интерфейсами
+
+
+namespace Pattern;
+
+public interface IOutConnector
+{
+    string OutConnectorConnect();
+}
+
+class RectangleConnector : IOutConnector
+{
+    public string OutConnectorConnect()
+    {
+        return "Rectangle connector";
+    }
+}
+
+class OvalConnector : IOutConnector
+{
+    public string OutConnectorConnect()
+    {
+        return "Oval connector";    
+    }
+}
+//реализация(IConnectInterface) задает общий интерфейс для всех своих реализаций(ComInterface,GpioInterface и др),
+//все мтоды которые здесь описны будут доступны классау абтсракции(Device) и всех ее поддклассов(Supply и VoltMeter)
+//описывает интерфейс подключения
+public abstract class ConnectedInterface
+{
+    protected IOutConnector outConnector;
+
+    protected ConnectedInterface(IOutConnector outConnector)
+    {
+        this.outConnector = outConnector;
+    }
+
+    public abstract void Connect();
+    public abstract void SendData();
+}
+
+//конкретная реализация
+//описывает какие интерфейсы подключения
+class GpioInterface : ConnectedInterface
+{
+    //содержит платформозависимый код
+    public override void Connect()
+    {
+        Console.WriteLine($"Conect to gpio {outConnector.OutConnectorConnect()}");
+    }
+
+    public override void SendData()
+    {
+        Console.WriteLine($"Send data to gpio ");
+    }
+
+    public GpioInterface(IOutConnector outConnector) : base(outConnector)
+    {
+    }
+}
+//конкретная реализация
+//описывает какие интерфейсы подключения
+class ComInterface : ConnectedInterface
+{
+    //содержит платформозаписимый код
+    public override void Connect()
+    {
+        Console.WriteLine($"Conect to comport {outConnector.OutConnectorConnect()}");
+    }
+
+    public override void SendData()
+    {
+        Console.WriteLine($"Send data to comrort ");
+    }
+
+    public ComInterface(IOutConnector outConnector) : base(outConnector)
+    {
+    }
+}
+//конкретная реализация
+class EthernetInterface : ConnectedInterface
+{
+    public override void Connect()
+    {
+        Console.WriteLine($"Conect to ethernet {outConnector.OutConnectorConnect()}");
+    }
+
+    public override void SendData()
+    {
+        Console.WriteLine($"Send data to ethernet ");
+    }
+
+    public EthernetInterface(IOutConnector outConnector) : base(outConnector)
+    {
+    }
+}
+
+//Abstraction(Абстракция) определяет базовыфй интерфейс и хранит ссылку на обьект Implementor(Реализатор)
+//выполонение операций в абстракции делегируется методам обьекта реализатора
+//описыывает девайс
+public abstract class Device
+{
+    //обьект реализатора (характеристика абстрактный интерфейс подключения)который 
+    protected ConnectedInterface connectedInterface;
+    public ConnectedInterface ConnectedInterface
+    {
+        set => connectedInterface = value;
+    }
+    
+    /// <summary>
+    /// консткрутор для абстрации
+    /// </summary>
+    /// <param name="connectedInterface">сюда записиывается обьект реализатора</param>
+    protected Device(ConnectedInterface connectedInterface)
+    {
+        this.connectedInterface = connectedInterface;
+       
+    }
+
+    //здесь происходити выполннение операций из реализатора 
+    public virtual void DoWork()
+    {
+        connectedInterface.Connect();
+        connectedInterface.SendData();
+    }
+    public abstract void ReceiveData();
+}
+
+//расширеные абстракции содержат различные вариаци управляющей логики
+//работаео с реализациями через общий интерфей реализации
+//описывает какие девайсы
+public class Supply : Device
+{
+   
+
+    public override void ReceiveData()
+    {
+        Console.WriteLine("resieve data about supply");
+    }
+
+    public Supply(ConnectedInterface connectedInterface) : base(connectedInterface)
+    {
+    }
+}
+//оописывает какие девайсы
+public class VoltMeter : Device
+{
+  
+
+    public override void ReceiveData()
+    {
+        Console.WriteLine("resieve data about voltage");
+    }
+
+    public VoltMeter(ConnectedInterface connectedInterface) : base(connectedInterface)
+    {
+    }
+}
+
+
+IOutConnector outConnectorOval = new OvalConnector();
+ConnectedInterface connectedInterfaceComOval = new ComInterface(outConnectorOval);
+Device deviceSupply = new Supply(connectedInterfaceComOval);
+deviceSupply.DoWork();
+deviceSupply.ReceiveData();
+
+//чтобы добаивитьь новый интерф подключения досатоочно просто присвоить в класс 
+//deviceSupply новый интерфейс 
+deviceSupply.ConnectedInterface = new EthernetInterface(new RectangleConnector());
+deviceSupply.DoWork();
+deviceSupply.ReceiveData();
+
+
+Device deviceVolt = new VoltMeter(new EthernetInterface(new OvalConnector()));
+deviceVolt.DoWork();
+deviceVolt.ReceiveData();
+
+IOutConnector outConnectorRectangle = new RectangleConnector();
+ConnectedInterface connectedInterfaceGpioRectangle = new GpioInterface(outConnectorRectangle);
+deviceVolt.ConnectedInterface = connectedInterfaceGpioRectangle;
+deviceVolt.DoWork();
+deviceVolt.ReceiveData();
+
+// Conect to comport Oval connector
+//Send data to comrort
+//resieve data about supply
+//Conect to ethernet Rectangle connector
+//Send data to ethernet
+//resieve data about supply
+//Conect to ethernet Oval connector
+//Send data to ethernet
+//resieve data about voltage
+//Conect to gpio Rectangle connector
+// Send data to gpio
+// resieve data about voltage
+
+--компоновщик
+------------------------------------------
+группирует множество обьектов в древовидную структуру, а затем работать с этий стуркуторй как с одним обьектом
+имеет смысл только когда основная модель программы может быть сконструирована в виде дерева ветка и лист
+
+проблема: напрмииер два обьекта: продукт и коробка или ветка и лист - 
+коробка может содержать несолькоко обьектов и коробок поменьше, а корбки поменьше может содержат либо продукты
+ либо коробки поменье и тд
+
+предположим продукты и коробки могут быть частью заказов. каждый заказ может содержать как простые продукты без 
+уппаковки так и составные коробки
+
+задача: узнать цену всех товаров в этой конструкции, если решать в лоб то потребуется открывть
+все корбки заказа и посчитать их суммарную стоимость, это сложно тк типы коробок и их содержимое неизвестно
+так же как и колво вложеностей коробок, тем самым циклом не выйдет
+
+
+решение: компоновщик предлагает рассматриать продукт и коробкку через единый интерфейс с общим методом получения стоимости
+продукт просто вернет свою цену, коробка спросит цену кажого предмента внутри себя и вренет сумму результатов. если один 
+из внутренних предметов окается коробка помньше она так же начент перебирать свое содержимое и тд пока не будут
+подсчитаны все составне части
+
+
+namespace ConsoleApp1;
+
+//базовый класс компонент обьявляет общие операции как для простых так и для
+//сложных обьектов структуры
+public abstract class Component
+{
+    public Component()
+    {
+    }
+
+    //базовый обьект может см реалищиовывать каоето поведение по умолчанию
+    //или поручить это конкретным классам обьявив метод содержащий повдение 
+    //асбтрактным
+    public abstract string Operation();
+
+    //в нектороых случаях целесообразно определить операци управления потомкам
+    //прямо в базовом классе Component. таки образом не нужно будет рпедоствлять
+    //конкретные классы компнентов клиентсвому коду. недостаток в том что эти методы
+    //будут пустыми для компонентов уровня листа
+    public virtual void Add(Component component)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual void Remove(Component component)
+    {
+        throw new NotImplementedException();
+    }
+
+//можно добавить метод дающий клиенсткому коду понять может ли компонет иметь
+//вложнеые обьекты
+    public virtual bool IsComposite()
+    {
+        return true;
+    }
+}
+
+//класс LEaf преждставляет соой конечные бьекты структуры. лист не может
+//иметь вложенных компонентов что и сигнализиурет IsComposite()
+//обычно обьектые листеьв выполняют фактическую работы тогда как обьеты контейнер 
+// только лишь деоегируют работу своим подкомпонентам(в данном пример листьям)
+class Leaf : Component
+{
+    public override string Operation()
+    {
+        return "Лист";
+    }
+
+    //тк этот обьект претсавляет кончечные обьекты структуры он не может содержжать в себе
+    //вложенные обьекты
+    public override bool IsComposite()
+    {
+        return false;
+    }
+}
+
+//Composite содержит в себе сложные компоненты которые могут иметь вложенные компоненты
+//(в данном случае листы). обычно Compositе (контейнеры) делегируют фактическую работу
+//своим детям а затем суммируют результат
+class Composite : Component
+{
+    protected List<Component> Children = new();
+    
+    public override void Add(Component component)
+    {
+        Children.Add(component);
+    }
+
+    public override void Remove(Component component)
+    {
+        Children.Remove(component);
+    }
+    
+    public override string Operation()
+    {
+        int i = 0;
+        string result = "Ветка(";
+
+        foreach (var component in Children)
+        {
+            result += component.Operation();
+            if (i != Children.Count -1)
+            {
+                result += "+";
+            }
+
+            i++;
+        }
+
+        return result + ")";
+    }
+}
+
+class Client
+{
+    // Клиентский код работает со всеми компонентами через базовый
+    // интерфейс.
+    public void ClientCode(Component leaf)
+    {
+        Console.WriteLine($"Результат {leaf.Operation()}\n");
+        
+    }
+
+    // Благодаря тому, что операции управления потомками объявлены в базовом
+    // классе Компонента, клиентский код может работать как с простыми, так
+    // и со сложными компонентами, вне зависимости от их конкретных классов.
+    public void ClientCode2(Component component1, Component component2)
+    {
+        //проверка на возможность хранвения в сеебе других элементов
+        if (component1.IsComposite())
+        {
+            component1.Add(component2);
+        }
+
+        Console.WriteLine($"Результат {component1.Operation()}");
+    }
+}
+
 
 --mvc--
 ------------------------------------------
