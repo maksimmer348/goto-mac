@@ -9607,6 +9607,51 @@ V
 
 ==========================================
 
+--Json.Serializer--serializer-deserializer--сериализация--
+------------------------------------------
+
+//создаем иерархию классов ктороые бду сериализованы
+public class DeepZuzlik
+{
+    public decimal Price { get; set; }
+}
+public class Zuzl
+{
+    public DeepZuzlik deep = new DeepZuzlik(){Price = 100};
+    public string Name;
+}
+
+public class Product
+{
+    public Zuzl Zuzl = new Zuzl(){Name = "Zuzlik"}; 
+    public string Name;
+    public DateTime ExpiryDate { get; set; }
+    public decimal Price { get; set; }
+    public string[] Sizes { get; set; }
+    
+}
+
+using Newtonsoft.Json;
+
+//проверяем существует ли файл Product.json если нет создаем его, если да дерериазиум файл и получаем все данные обратно
+//в виде <T>
+var product2  = 
+File.Exists("Product.json")? JsonConvert.DeserializeObject<Product>(File.ReadAllText("Product.json")): new Product
+{
+    Name = "Apple",
+    ExpiryDate = new DateTime(2008, 12, 28),
+    Price = 3.99M,
+    Sizes = new string[] {"Small", "Medium", "Large"}
+};
+
+
+//создаем файл продукт и после преобразования Product и всех влоджненных в него элментов
+//через json всталяем в этот файл.
+File.WriteAllText("Product.json", JsonConvert.SerializeObject(product2));
+
+
+
+==========================================
 
 --sql--базы данных--Entity Framework
 ------------------------------------------
@@ -12191,7 +12236,7 @@ transport.Operation();//Доставляется по морю, компание
 ==
 
 
---Прототип (Prototype)
+--Прототип--Prototype--
 порождающий паттерн проектирования который повзволяет скопировать обьектыы не вдаваясь в подробности 
 их релаизации
 
@@ -12392,6 +12437,25 @@ var p4 = p1.DeepCopy();
 p1.IdInfoPerson.IdNum = 49;//изменим значение в подкласе на 49
 Console.WriteLine(p3.IdInfoPerson.IdNum);//49
 Console.WriteLine(p4.IdInfoPerson.IdNum);//р4 исполььзуя глубокое клоонирование здесь получит 10
+
+
+так же можно использовать сериализацию
+--
+
+Product product = new Product();
+product.Name = "Apple";
+product.ExpiryDate = new DateTime(2008, 12, 28);
+product.Price = 3.99M;
+product.Sizes = new string[] {"Small", "Medium", "Large"};
+//копируем класс в json строку
+var jsonStingInProduct = JsonConvert.SerializeObject(product);
+//получаем его обратно в виде типа записаного в <T>
+var productClone = JsonConvert.DeserializeObject<Product>(jsonStingInProduct);
+
+productClone.Name = "Max";
+Console.WriteLine(product.Name);//Apple
+Console.WriteLine(productClone.Name);// Max
+
 
 --singleton--одиночка
 ------------------------------------------
@@ -12674,7 +12738,7 @@ driver.Travel(camelAdapter);
 интерфейсу именно это и приводит к разрастанию дерева классов
 
 решение - мост предлагает заменить наследование аагрегацией или композицией. для этого нужно выделить одну из 
-независимых плоскойсте (вид приборов и их интерфейс)в отдельную  иеразрхию и ссылатся на обьект этой иерархии, вместо
+независимых плоскойсте (вид приборов или их интерфейс)в отдельную  иеразрхию и ссылатся на обьект этой иерархии, вместо
 хранения его состояния и поведения внутри одного класса.
 
 таки образов можно сдлеать интерфейс отдельным классом с подкласами ком и юзернет. класс приборов полчит ссылку на 
