@@ -13472,6 +13472,219 @@ clientProgrammer.WorkInVisualStudio(ide);
 
 
 
+--наблюдатель--observer--издатель--подписчик--
+------------------------------------------
+исполььзует отношение один ко многим. в этом отношении есть один наблюдаемый обьект и множество наблюдателей.
+и при изменении наблюдаемого обьекта автоматически происходит оповещение наблюдателей.
+
+данный паттерн еще назыаеют издалель-подписчик, типа подписчики подписываются на мобытиие а издатель уведомляет
+подпичсиков. получив изменение и производят опредленные действия. 
+
+когда исполььзовать -когда система состоит из множества классов, обьктыы ктороых должны находится в согласовыных
+состояниях.
+-когда одна сторна рассылает собщения, а другая полчает эти сообщения и реагирует на них.
+-когда существует один обььект рассылающий собщения и множество подписчиков кторые эти собщения получают. при этом
+точно колво подписчиков неизвестно и в процесе работы программы колво подписчиков может изменятся.
+
+//интерфейс наблюдаемого обьекта(издатель)
+interface IObservable
+{
+    //для добавления наблюдателя(подписчика)
+    void AddObserver(IObserver o);
+    //удаление наблюдаетля
+    void RemoveObserver(IObserver o);
+    //увдедомление наблюдателей
+    void NotifyObservers();
+}
+//конкретая реализация интерфейса наблюдаемого обьекта
+class ConcreteObservable : IObservable
+{
+    //список наблюдателей
+    private List<IObserver> observers;
+    public ConcreteObservable()
+    {
+        observers = new List<IObserver>();
+    }
+ 
+    public void AddObserver(IObserver o)
+    {
+        observers.Add(o);
+    }
+    public void RemoveObserver(IObserver o)
+    {
+        observers.Remove(o);
+    }
+    public void NotifyObservers()
+    {
+        //проходим по списку наблюдателей и вызываеу м у каждого из них 
+        //метод update
+        foreach (IObserver observer in observers)
+            observer.Update();
+    }
+}
+//интерфейс наблюдателя
+interface IObserver
+{
+    void Update();
+}
+//конкретные налюдателя
+class ConcreteObserver :IObserver
+{
+    //конкретный метод кторый вызывается наблюдаемым обьектом(издателем)
+    //для уведомления наблюдателя
+    public void Update()
+    {
+    }
+}
+
+при этом наблюемому обьекту ничего знать о наблюдателях ненадо, кроме того что они реализуют
+метод UPdate(). с помощью отношения агрегации реализуется слабая связь обоих компонентов.
+изменения в наблюдаемом обьекте не влияют на наблюдателя и наоборот(только если наблюдаемый обьект не 
+вызовет метод update как в случае выше).
+наблюдаетль всегда может прекратиь наблюдение. и ппри этом обде эти сущности останутся сущетсовать 
+независимо друг от друга.
+
+--
+//аналогично примеру сверху
+public interface IObservable
+{
+    void AddObserver(IObserver observer);
+    void Remove(IObserver observer);
+    void NotifyObservers();
+}
+
+//аналогично примеру сверху
+public interface IObserver
+{
+    //уведомляем подписчиков о изменении в классе цен на тполиво
+    void Update(PriceFuelInfo storeInfo);
+}
+//издатель содержит список подписчиков ссылку на класс цен на топливо и метод имитацию изменения цен на топливо
+public class StoreFuel : IObservable
+{
+    private List<IObserver> observers;
+    private PriceFuelInfo priceInfo;
+    public StoreFuel()
+    {
+        observers = new();
+        priceInfo = new();
+    }
+    public void AddObserver(IObserver observer)
+    {
+        observers.Add(observer);
+    }
+
+    public void Remove(IObserver observer)
+    {
+        observers.Remove(observer);
+    }
+
+    public void NotifyObservers()
+    {
+        foreach (var observer in observers)
+        {
+            observer.Update(priceInfo);
+        }
+    }
+//мимтация изменения цен на топливо
+    public void FuelPrice()
+    {
+        Random rnd = new Random();
+        priceInfo.PriceGas = rnd.Next(45, 50);
+        priceInfo.PricePetrol = rnd.Next(60, 70);
+        //
+        NotifyObservers();
+    }
+}
+//класс инфформация о топливе кторый будет передаватся в подписчика
+public class PriceFuelInfo
+{
+    public int PriceGas { get; set; }
+    public int PricePetrol { get; set; }
+}
+
+//класс подписчика содержит сылку на класс издателя 
+public class PetrolCustomer : IObserver
+{
+    public string Name { get; set; }    
+    
+    private IObservable storeFuel;
+
+    public PetrolCustomer(IObservable observable, string name)
+    {
+        Name = name;
+        this.storeFuel = observable;
+        //поддписываемя на события из издателя (добалвяемся в список подписчиков в класе издателе)
+        observable.AddObserver(this);
+    }
+    
+    //подписчик уведомляется от издателя через этот метод когда издатель вызывает FuelPrice, 
+    //в кторм вызывается метод NotifyObservers котрый в свою очередь вызывает все методы update
+    //всех подписчиков кторые были добавлены в список издателя.
+    public void Update(PriceFuelInfo storeInfo)
+    {
+        if (storeInfo.PricePetrol > 68)
+        {
+            Console.WriteLine($"{Name} жалутес что бензин доргой");
+        }
+        else
+        {
+            Console.WriteLine($"{Name} покупат бензин по цене {storeInfo.PricePetrol}");
+        }
+    }
+
+//удаляем подписчика из списка подписчиков в классе издателе
+    public void StopTrade()
+    {
+        storeFuel.Remove(this);
+    }
+}
+
+public class GasCustomer : IObserver
+{
+    public string Name { get; set; }
+    private IObservable storeFuel;
+    
+    public GasCustomer(IObservable storeFuel, string name)
+    {
+        this.storeFuel = storeFuel;
+        Name = name;
+        storeFuel.AddObserver(this);
+    }
+    public void Update(PriceFuelInfo storeInfo)
+    {
+        if (storeInfo.PriceGas < 47)
+        {
+            Console.WriteLine($"{Name} скупает весь газ по цене {storeInfo.PriceGas}");
+        }
+        else
+        {
+            Console.WriteLine($"{Name} не покупает газ");
+        }
+    }
+
+    public void StopTrade()
+    {
+        storeFuel.Remove(this);
+    }
+}
+
+
+StoreFuel fuelStore = new StoreFuel();
+
+GasCustomer gas = new GasCustomer(fuelStore, "Lex");
+PetrolCustomer petrol = new PetrolCustomer(fuelStore, "Hex");
+
+fuelStore.FuelPrice();//Lex не покупает газ
+//Hex покупат бензин по цене 62
+
+//отписка одноко из подпискичов
+gas.StopTrade();
+
+fuelStore.FuelPrice();//Hex покупат бензин по цене 63
+
+
+
 --mvc--
 ------------------------------------------
 модель(model) - бизнес логика. например чтение/запись в бд, получение иформации с удалленных машин по сети, и тд. - кароче работа с данными
