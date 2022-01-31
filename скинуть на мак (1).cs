@@ -13467,9 +13467,98 @@ clientProgrammer.WorkInVisualStudio(ide);
 недодстатки -никто не гарантирует что запрос обработается в конечном счете. если необходимого обработчика
 в цепочке не обазалось, то запрос просто выходит из цепочки и остается необработаным.
 
+//определяет запрос ктороый нужно обработать через обработчики
+public class EnemyPerson
+{
+    public EnemyPerson(int hp) => Hp = hp;
+    public int Hp { get; set; }
+}
+
+//определяет интерфейс для обработки запроса по цепочке
+interface IHero
+{
+    public int Hp { get; set; }
+    public Hero Next { get; set; }
+    void Win(EnemyPerson personEnemy);
+}
 
 
+public class Hero : IHero
+{
+    public int Hp { get; set; }
+    public Hero Next { get; set; }
 
+    public Hero(int hp, Hero next)
+    {
+        Hp = hp;
+        Next = next;
+    }
+    // некоторая обработка запроса
+    public void Win(EnemyPerson personEnemy)
+    {
+        //если первый Handler смог обработаь запрос, выходим из метода
+        if (Hp > personEnemy.Hp)
+        {
+            Console.WriteLine($"{GetType().Name} смог убить врага");
+            return;
+        }
+        //если первый обработчик не смог обработать запрос, и следующий обработчик существует
+        else if(Next != null)
+        {
+            Console.WriteLine($"{GetType()} не смог убить, порбует {Next.GetType().Name}");
+            //преедаем ему запрос и выходим из метода
+            Next.Win(personEnemy);
+            return;
+        }
+        //если никто не смог делаем это
+        Console.WriteLine($"{GetType().Name} не смог, враг победил");
+    }
+}
+
+
+#region конкретные обработчики которые пытаются обработать запрос
+
+public class HeroOne : Hero
+{
+    public HeroOne(int hp =150, Hero next = null) : base(hp, next)
+    {
+        
+    }
+}
+ 
+
+public class HeroTwo : Hero
+{
+    public HeroTwo(int hp =30, Hero next = null) : base(hp, next)
+    {
+        
+    }
+}
+
+public class HeroThree : Hero
+{
+    public HeroThree(int hp =160, Hero next = null) : base(hp, next)
+    {
+        
+    }
+}
+
+#endregion
+
+EnemyPerson enemyPerson = new EnemyPerson(100);
+
+Hero heroOne = new HeroOne();
+Hero heroTwo = new HeroTwo();
+Hero heroThree = new HeroThree();
+
+heroOne.Next = heroTwo;
+heroTwo.Next = heroThree;
+
+heroOne.Win(enemyPerson);
+
+//HeroOne не смог убить, порбует HeroTwo
+//HeroTwo не смог убить, порбует HeroThree
+//HeroThree смог убить врага
 
 
 --наблюдатель--observer--издатель--подписчик--
