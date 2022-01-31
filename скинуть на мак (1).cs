@@ -7094,6 +7094,11 @@ public StopBits ConvertStopBits(int stopBit)
 То есть делегаты - это указатели на методы и с помощью делегатов мы можем вызвать данные методы.
 
 Если делегат принимает параметры, то в метод Invoke передаются значения для этих параметров.
+//это аналогично нижеследующему
+follovings?.Invoke(this,fn);
+
+//это аналогично вышеследующему
+if (follovings != null) follovings(this, fn);
 
 Другой пример анонимных методов - передача в качестве аргумента для параметра, который представляет делегат
 о в одной используется ?
@@ -7459,7 +7464,7 @@ private static void GetPersonInfo(Person p)//...ему можно присвои
 а любой объект типа Client является объектом типа Person, который используется в методе
 
 ------------------------------------------
-Делегаты Action, Predicate и Func
+--Делегаты--Action--Predicate--Func
 
 Делегат Action является обобщенным, принимает параметры и возвращает значение void:
 ------------------------------------------
@@ -7495,6 +7500,16 @@ static void Main(string[] args)
             {
                 Console.WriteLine("Разность чисел: " + (x1 - x2));
             }
+
+--
+private Action<TicTokUser, string> follovings;
+
+//так же в собятиях существуют да элмента упрвление add позволяющий подписатся и remove - отписатся
+public event Action<TicTokUser, string> Follovings
+    {
+        add => follovings += value;
+        remove => follovings -= value;
+    }
 
          
 ------------------------------------------
@@ -13771,6 +13786,106 @@ fuelStore.FuelPrice();//Lex не покупает газ
 gas.StopTrade();
 
 fuelStore.FuelPrice();//Hex покупат бензин по цене 63
+
+--
+подписка с сипользованием делегатов
+
+namespace Pattern;
+
+public class Account
+{
+    public string Nick { get; set; }
+}
+
+public class TicTokUser : Account
+{
+    //обобщеный делегат котрый принимает кому и какое соббщение будет передано  
+    //если применить = вместо += к делегату то можно затереть 
+    //все предыыдющие подписки поэтому стоит испольлзовать event
+    public event Action<TicTokUser, string> follovings;
+
+    //показывтаь на экарне то что пользователотписался 
+    public void Unsubcribe(TicTokUser user)
+    {
+        Console.WriteLine($"{user.Nick} отписался от {this.Nick}");
+        follovings -= user.Alerts;
+    }
+
+    //принимает тогго полььзователя кторый хочет сать наблюдаетлем для наблюдаемого обьекта
+    public void Subskribe(TicTokUser user)
+    {
+        Console.WriteLine($"{user.Nick} подписался на {this.Nick}");
+        follovings += user.Alerts;
+    }
+
+    //если данный метод выыызывается тем классом котрый порждает собыытие и в этом методе будет 
+    //пубдликоваться то что произошло
+    public void Alerts(TicTokUser sender, string info)
+    {
+        //если метод вызвал наблюдатель то он получит то что написал издатель
+        if (sender != this)
+        {
+            Console.WriteLine($"Лента {this.Nick}: Y {sender.Nick} {info}");
+        }
+        //если метод вызывал издатель то он получит уведомление о том что он написал
+        else
+        {
+            Console.WriteLine($"У меня {this.Nick} {info}");
+        }
+    }
+
+    //собдержит в себе информацию кторую будет пполучать наблюдатель и вызвать метод алерт
+    public void VideoiPublishing(MediaFile mediaFile)
+    {
+        var fn = $" выышло видео {mediaFile.FileName}";
+        //вызывает метод алерт и записыает в издаетля инормацию о том что он опубликовал
+        Alerts(this, fn);
+        //если у издаетля есть подписчики то они получат уведомелния о том что опуликовал издатель
+        if (follovings != null) follovings(this, fn);
+    }
+}
+
+public class MediaFile
+{
+    public string FileName { get; set; }
+
+    public MediaFile(string fileName)
+    {
+        FileName = fileName;
+    }
+}
+
+//у пользователя 1 пока нет не одного подписчика
+TicTokUser user = new TicTokUser() {Nick = "Lex"};
+TicTokUser user2 = new TicTokUser() {Nick = "Den"};
+TicTokUser user3 = new TicTokUser() {Nick = "Max"};
+TicTokUser user4 = new TicTokUser() {Nick = "Len"};
+TicTokUser user5 = new TicTokUser() {Nick = "Fix"};
+//пользователь 1 добаляет видео
+user.VideoiPublishing(new MediaFile("New video")); //У меня Lex  выышло видео New video
+
+user.Subskribe(user2); //Den подписался на Lex
+user.follovings += user3.Alerts;//можно так же подписатся напрмую минуя метод
+//если применить = вместо += к делегату то можно затереть 
+//все предыыдющие подписки поэтому стоит испольлзовать event
+//user.follovings = user4.Alerts;
+user.VideoiPublishing(new MediaFile("New Video2")); //У меня Lex  выышло видео New Video2
+//Лента Den: Y Lex  выышло видео New Video2
+
+user.VideoiPublishing(new MediaFile("New Video3"));//У меня Lex  выышло видео New Video3
+//Лента Den: Y Lex  выышло видео New Video3
+
+--
+события использующиеся в паттерне могут иметь элментыы управления
+private Action<TicTokUser, string> follovings;
+
+//так же в собятиях существуют да элмента упрвление add позволяющий подписатся и remove - отписатся
+public event Action<TicTokUser, string> Follovings
+    {
+        add => follovings += value;
+        remove => follovings -= value;
+    }
+пример выше не обладет логикой в add, remove но можно ее добавитьи
 
 
 
