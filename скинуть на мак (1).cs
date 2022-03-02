@@ -9392,6 +9392,53 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 пространства имен в xaml  не эквивлаентны using те например http://schemas.microsoft.com/winfx/2006/xaml/presentation 
 включает в себя System.Windows, System.Windows.Automation, System.Windows.Controls и прочие основные 
 
+
+--пространства имен из с# 
+------------------------------------------
+по умолчанию в хамл подключается предутановленный небо пространтва имен xml, но можно задейсовтвать любый пространства
+имен и их функциональность в том числе и стандартные пространва имен .NET нпмрие Sysyem.Collections 
+ 
+по умолчанию к обьекту подключается пространвто имен локаольное оно как правило имеет имя проекта и позволяет 
+подключать классы в нем опредленные.
+xmlns:local="clr-namespace:WpfAppTest1"
+
+например создва в пространтве имен проекта такой класс
+
+public class Phone
+{
+    public string Name { get; set; }
+    public int Price { get; set; }
+      
+    public override string ToString()
+    {
+        return $"Смартфон {this.Name}; цена: {this.Price}";
+    }
+}
+теперь можно вывести его данные на кнопку исопльзуя префикс привзаный к намспейсу те local
+<Button x:Name="button1"  Width="300" Height="40" Click = "btnClick">
+            <Button.Content>
+                <local:Phone Name="Lumia 950" Price="700" />
+            </Button.Content>
+        </Button>
+для сложных типов свойство Content делает с ними ToString()
+
+вот как можно испольтзовать стнадартные простарнства имен из с#
+
+xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
+xmlns:sys="clr-namespace:System;assembly=mscorlib"
+
+<Window.Resources>
+    <col:ArrayList x:Key="days">
+        <sys:String>Понедельник</sys:String>
+        <sys:String>Вторник</sys:String>
+        <sys:String>Среда</sys:String>
+        <sys:String>Четверг</sys:String>
+        <sys:String>Пятница</sys:String>
+        <sys:String>Суббота</sys:String>
+        <sys:String>Воскресенье</sys:String>
+    </col:ArrayList> 
+</Window.Resources>
+
 --элменты и их атрибуты
 ------------------------------------------
 
@@ -9462,7 +9509,8 @@ private void Button_Click(object sender, RoutedEventArgs e)
 
 --события WPF
 ------------------------------------------
-WPF в отличие от других технологий, например, от Windows Forms, предлагает новую концепцию событий - маршрутизированные события (routed events).
+WPF в отличие от других технологий, например, от Windows Forms, предлагает новую концепцию событий - маршрутизированные 
+события (routed events).
 
 Для элементов управления в WPF определено большое количество событий, которые условно можно разделить на несколько групп:
 
@@ -9502,11 +9550,170 @@ WPF в отличие от других технологий, например, 
             MessageBox.Show("Hi from Button_Click");
         }
 
-Все маршрутизируемые события используют класс RoutedEventArgs (или его наследников), который представляет доступ к следующим свойствам:
+Все маршрутизируемые события используют класс RoutedEventArgs (или его наследников), который представляет доступ к 
+следующим свойствам:
 Source: элемент логического дерева, являющийся источником события.
 OriginalSource: элемент визуального дерева, являющийся источником события. Обычно то же самое, что и Source
 RoutedEvent: представляет имя события
-Handled: если это свойство установлено в True, событие не будет подниматься и опускаться, а ограничится непосредственным источником.
+Handled: если это свойство установлено в True, событие не будет подниматься и опускаться, а ограничится непосредственным 
+источником.
+
+--
+или так 
+
+<Button x:Name="button1"  Width="100" Height="30" Content="Кнопка" Click = "btnClick"/>
+<TextBox x:Name="tBoxName"  Width="150" Height="30" VerticalAlignment="Top" Margin="20" />
+
+private void btnClick(object sender, RoutedEventArgs e)
+     {
+         string text = tBoxName.Text;
+
+         if (text != "")
+         {
+             MessageBox.Show(text);
+         }
+     }
+
+
+--сложные свойства и конвертеры типов
+------------------------------------------
+
+можно создать кнопку таким образом, с помощью атрибутов можно задать раличные простые свойства кнопки например 
+Width, Height они хранять числа. а вот HorizontalAlignment и Background более сложные
+<Button x:Name="myButton" Width="120" Height="40" Content="Кнопка" HorizontalAlignment="Center" Background="Red" />
+
+и если переложить этот код на C#
+
+Button btn = new Button();
+btn.Width = 10;
+btn.Height = 10;
+btn.Content = "Button1";
+//вырванивание кнопки 
+btn.HorizontalAlignment = HorizontalAlignment.Left;
+//фоновый цвет кнопки
+btn.Background = new SolidColorBrush(Colors.Red);
+//добавляет кнопку в дочерние элемнеты панели layoutGrid
+layoutGrid.Children.Add(btn);
+
+как видно гораздо удобнее исопльзовать xaml тк по отнашению к нему применяетсЯ спец обьекты так наз конвертеры типов
+они преобразуют значени  xaml в типы обьектов использующизхся c#, преобразуются сложные типы Brush, Color, FontWeight 
+и т.д. при необходимости моожео создавать ссвои конвертеры для какихто собственных типов данных
+для преобразование Background="Red" в обьект SolidColorBrush ипользуется прои зводный класс BrushConverter
+
+фактически В данном случае программа пытается получить конвертер для типа Brush (базового класса для SolidColorBrush) 
+и затем преобразовать строку "Red" в конкретный цвет. Для получения нужного конвертера, программа обращается к 
+метаданных класса Brush.
+xaml - Background="Red" == c# - myButton.Background = (Brush)System.ComponentModel.TypeDescriptor
+        .GetConverter(typeof(Brush)).ConvertFromInvariantString("Red");
+
+--компоновка элементов на форме
+------------------------------------------
+компоновка это размещение эдементов внутри контейнера, wpf придерживается реззинового дизайна где весь процесс дизайнинга
+осуществляется с помощью компоновки. например при ресайзе самтчабируются элменты.
+в впф копоновка контейнеры такие - Grid, UniformGrid, StackPanel, WrapPanel, DockPanel и Canvas
+
+разные контейнеры могут внутри себя содеражть подконтецнеры.
+
+так же есть спец элменты как TabPanel которые могут в себе содержать др элеметыю и даже сами когнтейнеры компоновки
+однако на саму компоновку не влиют. 
+
+так же можно определить свои контейнеры все контейнер наслдуют от Panel
+
+ВАЖНО wpf--компоновка при ней не следут указзывать явные размеры элементов(только мин и макс размеры) размеры должны 
+определятся контейнерами
+нежеалтельно так же указывать позицию и координаты эл внутри окна/контейнеров, позиционирование так же дело контейнеров
+если нужно добиться сложной системы компоновки можно вкладывать один контейнер в другой чтобы добится масикмоального
+удобного расопложения эл упр.
+
+процесс компоновки в два этапа 
+измерение (mesaure) и расстановка (arrange). на этапе измерения контейнер производит измерение прежпочтитьльного для 
+дочерних эл места. однако не всегда контейнер имеет досточно метста чтобы расставить все эл на сови места поэтому их 
+размеры приходится усекать, затем происходит расстановка эл внутри контейнера.
+
+--grid
+------------------------------------------
+наиболее мощный и самый распостраненный контейнер типа таблицы. содержит столбы и строк, колво которых задается.
+для определения строк Grid.RowDefinitions (для одиночной строки это RowDefinition), для столбцов Grid.ColumnDefinitions. 
+(для одинончного сторлбца это ColumnDefinition)
+<!-- атрибут ShowGridLines хадает видимость сетки -->
+<Grid x:Name="layoutGrid" ShowGridLines="True">
+    <Grid.RowDefinitions>//строки
+        <!-- можно выставлять размеры -->
+        <RowDefinition></RowDefinition Height="100">
+        <RowDefinition></RowDefinition>
+        <RowDefinition></RowDefinition>
+    </Grid.RowDefinitions>
+    
+    <Grid.ColumnDefinitions>//столбец
+        <ColumnDefinition Width="150" /></ColumnDefinition>
+        <ColumnDefinition></ColumnDefinition>
+        <ColumnDefinition></ColumnDefinition>
+    </Grid.ColumnDefinitions>
+</Grid>
+в итоге получвиалсь таблица 3 на 3
+
+чтобы задать позицию эл и привзяать его к ячейке в строке надо сделать так 
+
+<!--кнопка бужет рапороложена в 2 столбце 2 сторке, Grid.ColumnSpan="3" обьединить 3 столбца -->
+<Button Grid.Column="0" Grid.Row="2" x:Name="button1" Grid.ColumnSpan="3" Content="Обединение всех столбцов"
+ Click="btnClick"/>
+
+<Button Grid.Column="0" Grid.Row="0" x:Name="button2" Click="btnClick"/>
+<TextBox Grid.Column="1" Grid.Row="0"  Grid.ColumnSpan="3" x:Name="tBoxName"/>
+
+--автоматичесикие размеры
+
+<ColumnDefinition Width="Auto" />
+<RowDefinition Height="Auto" />
+
+--абсолютные размеры
+<!-- можно выставлять размеры - строке высоту-->
+<RowDefinition></RowDefinition Height="100">
+<!-- можно выставлять размеры - столбцу ширину-->
+<ColumnDefinition Width="150" /></ColumnDefinition>
+так же можно указывать размеры в писеляхи и дюймах
+<RowDefinition Height="20 px">... <RowDefinition Height="2 in">...
+
+--пропорциональные размеры
+например нужно залдать два столбца второй из них имеет ширину в чсетверть от ширини первого
+
+Если у нас есть несколько сток или столбцов, высота которых равна *, то все доступное место 
+делится поровну между всеми такими сроками и столбцами. Использование коэффициентов (0.25*) 
+позволяет уменьшить или увеличить выделенное место на данный коэффициент. При этом все коэффициенты 
+складываются (коэффициент * аналогичен 1*) и затем все пространство делится на сумму коэффициентов.
+
+<!-- если размер *, то элмент будет занимтаь все оставшееся место -->
+<ColumnDefinition Width="*"/>
+<!-- это будет половина размера стандартного окна будь у него * -->
+<ColumnDefinition Width="0.5*"/>
+
+Аналогичен контейнеру Grid контейнер UniformGrid, только в этом случае все столбцы и строки одинакового размера и 
+используется упрощенный синтаксис для их определения
+
+<UniformGrid Rows="2" Columns="2">
+    <Button Content="Left Top" />
+    <Button Content="Right Top" />
+    <Button Content="Left Bottom" />
+    <Button Content="Right Bottom" />
+</UniformGrid>
+
+--GridSplitter
+------------------------------------------
+штука наопдобии сплит контейнера для winform
+
+<!-- распологается в ячейке слева от разделителя  -->
+<Button Grid.Row="1" Grid.Column="0" Content="Левая кнопка" />
+<!-- распологается посередине относительлно кнопок -->
+<GridSplitter Grid.Row="1" Grid.Column="1" ShowsPreview="False" Width="100" 
+                       HorizontalAlignment="Center" VerticalAlignment="Stretch" />
+<!-- распологается в ячейке справа от разделителя -->
+<Button Grid.Row="1" Grid.Column="2" Content="Правая кнопка" />
+
+Двигая центральную линию, разделяющую правую и левую части, мы можем устанавливать их ширину.
+
+испольхзовав свойтсво Grid.RowSpan располжили его на в друх строках
+<GridSplitter Grid.Column="1" Grid.RowSpan="2" ShowsPreview="False" Width="3"
+                      HorizontalAlignment="Center" VerticalAlignment="Stretch" />
 
 опции окон wpf
 ------------------------------------------
@@ -9549,28 +9756,48 @@ Grid
             <ColumnDefinition/>
 
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="" Grid.ColumnSpan="4" x:Name="textLabel" FontSize="48" FontFamily="Arial" Background="#FF999999" TextAlignment="Left" FontStretch="Normal" FontStyle="Normal" FontWeight="Normal" TextWrapping="NoWrap"/>
-        <!--создаем тектовое поле в полях Grid.Row="0"(row это строка в таблице) Grid.Column="0" те в  адрес в ряде и в столбце соответсвенно 
-        те верхний правый, Grid.ColumnSpan="4 обьединяем 4 столбца(Grid.RowSpan="4" так бы мы обьеденили 4 ряда)-->
-        <Button x:Name="button1" Grid.Column="0" Grid.Row="1" Background="#FF191B17" Foreground="White" FontSize="16" FontFamily="Arial" >1</Button>
-        <!--Background="#FF191B17" цвет кнопки, Foreground цвет текста, 1 это текст кнопки который будет отображатсня на ней, Grid.Column="0" Grid.Row="1" как уже показано 
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="" Grid.ColumnSpan="4" x:Name="textLabel" FontSize="48" 
+        FontFamily="Arial" Background="#FF999999" TextAlignment="Left" FontStretch="Normal" FontStyle="Normal" 
+        FontWeight="Normal" TextWrapping="NoWrap"/>
+        <!--создаем тектовое поле в полях Grid.Row="0"(row это строка в таблице) Grid.Column="0" те в  адрес в ряде--> 
+        <!--и в столбце соответсвенно -->
+        <!--те верхний правый, Grid.ColumnSpan="4 обьединяем 4 столбца(Grid.RowSpan="4" так бы мы обьеденили 4 ряда)-->
+        <Button x:Name="button1" Grid.Column="0" Grid.Row="1" Background="#FF191B17" Foreground="White" FontSize="16" 
+        FontFamily="Arial" >1</Button>
+        <!--Background="#FF191B17" цвет кнопки, Foreground цвет текста, 1 это текст кнопки который будет отображатсня на
+         ней, Grid.Column="0" Grid.Row="1" как уже показано 
         -->
-        <Button x:Name="button2" Grid.Column="1" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">2</Button>
-        <Button x:Name="button3" Grid.Column="2" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">3</Button>
-        <Button x:Name="button4" Grid.Column="0" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">4</Button>
-        <Button x:Name="button5" Grid.Column="1" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">5</Button>
-        <Button x:Name="button6" Grid.Column="2" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">6</Button>
-        <Button x:Name="button7" Grid.Column="0" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">7</Button>
-        <Button x:Name="button8" Grid.Column="1" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">8</Button>
-        <Button x:Name="button9" Grid.Column="2" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">9</Button>
-        <Button x:Name="button0" Grid.Column="0" Grid.Row="4" Background="#FF191B17" FontSize="16" FontFamily="Arial" Foreground="White">0</Button>
+        <Button x:Name="button2" Grid.Column="1" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">2</Button>
+        <Button x:Name="button3" Grid.Column="2" Grid.Row="1" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">3</Button>
+        <Button x:Name="button4" Grid.Column="0" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">4</Button>
+        <Button x:Name="button5" Grid.Column="1" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">5</Button>
+        <Button x:Name="button6" Grid.Column="2" Grid.Row="2" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">6</Button>
+        <Button x:Name="button7" Grid.Column="0" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">7</Button>
+        <Button x:Name="button8" Grid.Column="1" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">8</Button>
+        <Button x:Name="button9" Grid.Column="2" Grid.Row="3" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">9</Button>
+        <Button x:Name="button0" Grid.Column="0" Grid.Row="4" Background="#FF191B17" FontSize="16" FontFamily="Arial" 
+        Foreground="White">0</Button>
 
-        <Button x:Name="buttonAdd" Grid.Column="4" Grid.Row="1" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">+</Button>
-        <Button x:Name="buttonSubtraction" Grid.Column="4" Grid.Row="2" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">-</Button>
-        <Button x:Name="buttonMultiply" Grid.Column="4" Grid.Row="3" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">*</Button>
-        <Button x:Name="buttonDivide" Grid.Column="4" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">/</Button>
-        <Button x:Name="buttonEqually" Grid.Column="1" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White" >=</Button>
-        <Button x:Name="buttonAC" Grid.Column="2" Grid.Row="4" Background="#FF464646" FontSize="16" FontFamily="Arial" Foreground="White">AC</Button>
+        <Button x:Name="buttonAdd" Grid.Column="4" Grid.Row="1" Background="#FF464646" FontSize="16" 
+        FontFamily="Arial" Foreground="White">+</Button>
+        <Button x:Name="buttonSubtraction" Grid.Column="4" Grid.Row="2" Background="#FF464646" FontSize="16" 
+        FontFamily="Arial" Foreground="White">-</Button>
+        <Button x:Name="buttonMultiply" Grid.Column="4" Grid.Row="3" Background="#FF464646" FontSize="16" 
+        FontFamily="Arial" Foreground="White">*</Button>
+        <Button x:Name="buttonDivide" Grid.Column="4" Grid.Row="4" Background="#FF464646" FontSize="16" 
+        FontFamily="Arial" Foreground="White">/</Button>
+        <Button x:Name="buttonEqually" Grid.Column="1" Grid.Row="4" Background="#FF464646" FontSize="16" 
+        FontFamily="Arial" Foreground="White" >=</Button>
+        <Button x:Name="buttonAC" Grid.Column="2" Grid.Row="4" Background="#FF464646" FontSize="16" 
+        FontFamily="Arial" Foreground="White">AC</Button>
     </Grid>
 </Window>
 
