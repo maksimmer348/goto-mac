@@ -9715,6 +9715,13 @@ xaml - Background="Red" == c# - myButton.Background = (Brush)System.ComponentMod
 <GridSplitter Grid.Column="1" Grid.RowSpan="2" ShowsPreview="False" Width="3"
                       HorizontalAlignment="Center" VerticalAlignment="Stretch" />
 
+вертикальный разделитьель длиной в одну строчку
+<GridSplitter Grid.Row="1" Grid.Column="1" ShowsPreview="False" Width="100" 
+                      HorizontalAlignment="Center" VerticalAlignment="Stretch" />
+                      горизонтальный разделитель на 3 строчки шириной 
+        <GridSplitter  Grid.Row="2"  Grid.Column="0" ShowsPreview="False" 
+                       Height="10"  HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.ColumnSpan="3"/>
+
 опции окон wpf
 ------------------------------------------
 
