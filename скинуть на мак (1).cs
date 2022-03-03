@@ -9719,10 +9719,198 @@ xaml - Background="Red" == c# - myButton.Background = (Brush)System.ComponentMod
 <GridSplitter Grid.Row="1" Grid.Column="1" ShowsPreview="False" Width="100" 
                       HorizontalAlignment="Center" VerticalAlignment="Stretch" />
                       горизонтальный разделитель на 3 строчки шириной 
-        <GridSplitter  Grid.Row="2"  Grid.Column="0" ShowsPreview="False" 
+<GridSplitter  Grid.Row="2"  Grid.Column="0" ShowsPreview="False" 
                        Height="10"  HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.ColumnSpan="3"/>
 
-опции окон wpf
+--StackPanel
+------------------------------------------
+распологает элементы по горизонтали/по вертикали в зависимотсти от ориентации если они не помещаются то будет смеещние 
+элемента за границы панели
+
+<StackPanel Orientation="Vertical" Grid.Row="3" Grid.Column="2">
+    <Button Background="Blue" Content="1" />
+    <Button Background="White" Content="2" />
+    <Button Background="Red" Content="3" />
+</StackPanel>
+
+при горизонтаьной ориентации все вложненные эл распологаются слева направо. ели нужно ноборот то нужно использовать
+свойство FlowDirection="RightToLeft"
+  
+<StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Grid.Row="3" Grid.Column="2">
+
+
+--DockPanel
+------------------------------------------
+конейнер ктороый прижимает свое содержимое к определенной стороне свнешнего контейнера, дл этого у элментов нужно 
+устновить сторону к которой они будут прижиматся с помощью свойсвта dock.panel
+
+DockPanel.LastChildFill растягивается ли последний дочерний элемент в панели, чтобы заполнить оставшееся свободное место.
+
+<DockPanel Visibility="Visible" Grid.Row="4" LastChildFill="True">
+   <!-- прижимается к верхней стороне докпанели -->
+    <Button DockPanel.Dock="Top" Content="Top"/>
+    <!-- остальные действую аналогично верхней -->
+    <Button DockPanel.Dock="Bottom" Content="Bot"/>
+    <Button DockPanel.Dock="Left" Content="Left"/>
+    <Button DockPanel.Dock="Right" Content="Right"/>
+    <!-- у последнего эл можно не указывать свойство док панель он займет все оставшееся место если LastChildFill="True"-->
+    <Button Content="Centre"/>
+</DockPanel>
+
+удобно его создавать для стандартных интерфейсов, где верхнююи левую часть могут занимать какието меню а нижнюю нарпимер 
+строка состояния а в центрен напрмиер олсновое содержание.
+
+--WrapPanel
+------------------------------------------
+тоже что и StackPanel только если элдменты не помещаются в одной строке или колонке создаются новые столбец или колонка
+для непоместифшихся
+
+<WrapPanel Grid.Row="4" Grid.Column="1" ItemWidth="50"  ItemHeight="50" Orientation="Vertical">
+
+можно становить ширину ItemWidth или выысоту ItemHeight  всех элемнтов в панели, даже если у них была устаовлена размер 
+внутри эл они все примут эти размеры (ItemWidth ItemHeight)
+
+в вертикальном виде все эл у ктороых явно не указан ширина (Width) все примут ширину самого широкого эл в панели
+
+--Canvas
+------------------------------------------
+наиболее простой контейнер. для размещения на нем необходимо указать для эл точные координаты относительно сторон Canvas
+для их установки используются свойства Canvas.Left, Canvas.Right, Canvas.Bottom, Canvas.Top. в качестве едениц измерения
+используются не пкисели а независимые еденицы равные 1/95 дюйма для эффективного масштабирования
+
+если указаны все координаты Left, Right, Bottom, Top. отдаваться предпочтение свойствам Canvas.Top и Canvas.Left.
+Вне зависимости от порядка задания значения.
+
+ <Canvas Grid.Row="4" Grid.Column="1">
+    <WrapPanel  Canvas.Top="10" Canvas.Left="40"  Orientation="Vertical">
+    </WrapPanel>
+</Canvas> 
+
+по умолчанию элмент в канвас будет находится в верхнем левом углу
+
+
+--свойства--компоновки эл
+------------------------------------------
+основные еденицы изщмерения  сантиметры (cm), точки (pt), дюймы (in) (Width="5cm" Height="0.4in")
+
+--ширина высота
+
+Width Height принимают в double не рекомендуется исопльзовать фиксированю.
+MinWidth/MaxWidth и MinHeight/MaxHeight задание диапахонов ширины высоты
+
+--выравнивание 
+HorizontalAlignment по горизонтали выравнивает эл относитльно правой или левой стороны контейнера Left, Right, Center,
+Stretch (растяжение по всей ширине)
+
+VerticalAlignment по вертикали Top, Bottom, Center, Stretch (растяжение по всей высоте)
+
+--отступы
+устанваливает отсупы вокруг эл Margin="левый_отступ верхний_отступ правый_отступ нижний_отступ"
+
+<Button Grid.Row="4" Grid.Column="2"  Content="15 10 0 0" Width="60" Height="30" Margin ="20 10 0 0"
+            HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+--перекрытие элемантов
+элементы иногда могут полность./частично перекрывать друг друга. однако назначив одному из них более высокое знаение,
+Panel.ZIndex можно пережвинуть его на передний план.
+
+<Button Grid.Row="4" Grid.Column="2"  Content="нижняя" Width="60"  Panel.ZIndex="-1"  Height="30" Margin ="15 10 0 0"
+            HorizontalAlignment="Left" VerticalAlignment="Top"/>
+<Button Grid.Row="4" Grid.Column="2"  Content="верхняя" Width="60" Panel.ZIndex="0" Height="30" Margin ="20 10 0 0"
+            HorizontalAlignment="Left" VerticalAlignment="Top"/>
+<Button Grid.Row="4" Grid.Column="2"  Content="самая верхняя" Width="60" Panel.ZIndex="1" Height="30" Margin ="20 10 0 0"
+            HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+
+--элменты управления
+------------------------------------------
+
+Ну если у вас сложный интерфейс и нужно скрыть часть элементов, к примеру визард какой-либо, где зависит от шагов
+ что-то..
+И если важно чтобы общий вид интерфейса не изменился то ставить, hidden , т.к. если поставить collapsed, то элементы 
+могут быть скомпонованы по другому.
+
+--radiobatton
+<StackPanel Grid.Row="4" Grid.Column="2" Margin="70 50 0 0">
+            <RadioButton GroupName="Languages" Content="C#" IsChecked="True" />
+            <RadioButton GroupName="Languages" Content="VB.NET" />
+            <RadioButton GroupName="Languages" Content="C++" />
+</StackPanel>
+
+--ресурсы wpf--
+------------------------------------------
+подразумевается не доп файлы типа фотографий аудиофайлов и тд.
+это логические ресурсы, которые могут представлятьразличные обьекты- эл управления, кисти, колеекции обьектов и тд
+лог ресурсы можно втсарвитвать в xaml  с помощью свойства Resources. его имеют большиснтво классов wpf
+
+определив один раз ресурс можно будет использовать в различных метсах приложения. в связи с этим можно изменив его в 
+одном месте он мизеится глобально в приложении.
+
+свойство Resources пресдатвляет обьект ResourcesDictionary или словарь ресрусов где каждый ресур имеет свой ключ
+
+<!-- обьявляем ресурсы ктороыре будут использоватся в текущем окне -->
+<Window.Resources>
+    <!-- создаем кисть с красным цветом и присваиваем ей имя RedColor -->
+    <SolidColorBrush x:Key="RedColor" Color="Red"></SolidColorBrush>
+    <!-- создаем градинет от синего до белого и присваиваем ему имя gradientStyle-->
+    <LinearGradientBrush x:Key="gradientStyle" StartPoint="0.5,1" EndPoint="0.5,0">
+        <GradientStop Color="LightBlue" Offset="0" />
+        <GradientStop Color="White" Offset="1" />
+    </LinearGradientBrush>
+</Window.Resources>
+
+<!-- пример использования чтобы вызвать ресур в элементне нужновызвать - "{StaticResource gradientStyle}" -->
+<Button Background="{StaticResource gradientStyle}" MinWidth="200" Content="1" />
+<Button Background="{StaticResource RedColor}" Content="2" />
+
+--разделяемые ресурсы
+------------------------------------------
+создавая обьект ресурса мы можем исопльзовать ео в разных миетсах фактиччески мы сипользуме тот же обьект ресусра
+ <SolidColorBrush x:Key="RedColor" Color="Red"></SolidColorBrush> 
+
+иногда нужно чтобы при каждом применении создавался новый экз ресурса тогда исопльзуется x:Shared="False"
+<SolidColorBrush x:Shared="False" x:Key="redStyle" Color="BlanchedAlmond" />
+
+--
+упраавление ресрусами в c#
+
+Добавим в словарь ресурсов окна градиентную кисть и установим ее для кнопки
+
+// определение объекта-ресурса
+LinearGradientBrush gradientBrush = new LinearGradientBrush();
+gradientBrush.GradientStops.Add(new GradientStop(Colors.LightGray, 0));
+gradientBrush.GradientStops.Add(new GradientStop(Colors.White, 1));
+ 
+// добавление ресурса в словарь ресурсов окна
+this.Resources.Add("buttonGradientBrush", gradientBrush);
+ 
+// установка ресурса у кнопки
+button1.Background = (Brush)this.TryFindResource("buttonGradientBrush");
+// или так
+//button1.Background = (Brush)this.Resources["buttonGradientBrush"];
+
+С помощью свойства Add() объект кисти и его произвольный ключ добавляются в словарь. Далее с помощью метода
+TryFindResource() мы пытаемся найти ресурс в словаре и установить его в качестве фона. Причем, так как этот 
+метод возвращает object, необходимо выполнить приведение типов.
+
+свойства ResourceDictionary 
+Метод Add(string key, object resource) добавляет объект с ключом key в словарь, причем в словарь можно добавить 
+любой объект, главное ему сопоставить ключ
+
+Метод Remove(string key) удаляет из словаря ресурс с ключом key
+
+Свойство Uri устанавливает источник словаря
+
+Свойство Keys возвращает все имеющиеся в словаре ключи
+
+Свойство Values возвращает все имеющиеся в словаре объекты
+
+Для поиска нужного ресурса в коллекции ресурсов у каждого элемента определены методы FindResource()
+(если ресруса нет исключение) и TryFindResource()(если ресруса нет в нем будет null)
+
+
+
+--опции окон wpf
 ------------------------------------------
 
    AddNewBDWindow newBdWindow = new AddNewBDWindow();//вызываем экземпляр окна с которым буде работать
