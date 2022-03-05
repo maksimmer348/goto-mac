@@ -10045,7 +10045,7 @@ private void LeftBtn_OnClick(object sender, RoutedEventArgs e)
 То есть чтобы у нас оба текстовых поля, которые связаны режимом TwoWay, моментально обновлялись после изменения одного 
 из них, надо использовать значение UpdateSourceTrigger.PropertyChanged:
 
---Binding--Source Binding Source
+--Binding--Source
 ------------------------------------------
 позволяет установить привзяку даже к тем обьектам ктороые не являются эл управления wpf. 
 
@@ -10090,21 +10090,81 @@ UpdateSourceTrigger=PropertyChanged}"
 
 FindAncestor - привязка осуществляется к свойству элемента-контейнера.
 
+<!--задали цвте гриду-->
+<Grid x:Name="layoutGrid" Background="RosyBrown" ShowGridLines="True">
 
+<!--здесь привязка содержимого тектбоска к цвету контейнера в ктотром этот бокс находится те к цвету гриду-->  
+<TextBox Text="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}, 
+Path=Background}" ></TextBox>
 
+--DataContext Свойство
+------------------------------------------
 
+у обьекта FrameworkElement от которого наслсдеются все  эл упр есть свойство DataContext. 
+оно позволяет затать для эл и вложеных в него эл нектороый контескт данных напрмиер класс Phone
+тогда все вложеные эл могут исользоваться этот контекст обращаясь напрямую к полям 
 
+<Window.Resources>
+<!-- после добавления его в ресурсы можно привязать кнопку к нему -->
+<local:Phone x:Key="MyPhone" Name="Xiaomi" Price="180"/>
 
+<!-- в конетейнере обьявлили дата контескт на ресур класса телефон -->
+<UniformGrid DataContext="{StaticResource MyPhone}"  Grid.Row="3">
+<!-- теперь внутр контейнера можно в уопрощенном виде обращатся к полям класса телефон -->
+<Button Content="{Binding Price}" />
+<Button Content="{Binding Name}" />
 
+--StringFormat форматирование значений привязки и конвертер значений в биндингах 
+------------------------------------------
+иногда биндингу требуется неткороая кастомизация. наприме нужно форматированое знаени в форме
+напрмиер нужно вывести в тектосвыйбок не только цену но и еще какауют информацию.
 
+<local:Phone x:Key="MyPhone" Name="Xiaomi" Price="180"/>
 
+в данном случае на текбокс выведется текст Телефон Xiaomi, топ за свои деньги
+<TextBox Grid.Column="1" Grid.Row="0"  x:Name="tBoxName" Text="{Binding StringFormat=Телефон {0}, топ за свои деньги,
+Source={StaticResource MyPhone}, Path=Name, UpdateSourceTrigger=Explicit}" />
 
+StringFormat в случае DataContext
+<UniformGrid DataContext="{DynamicResource MyPhone}"  Grid.Row="3">
+   <TextBox Text="{Binding StringFormat=Hello {0}, Path=Name}"/>
 
+StringFormat в случае если нужно сперва запиасать ззанчение Path
+{Binding StringFormat={}{0}, привет,...
 
+==========================================
 
+--INotifyPropertyChanged
+------------------------------------------
+в прошлой теме исолпьзовался классс Phone ное при изменениии полей этого класса не будет изменеий на форме 
 
+<UniformGrid DataContext="{ MyPhone}"  Grid.Row="3">
+<!-- теперь внутр контейнера можно в уопрощенном виде обращатся к полям класса телефон -->
+<Button Content="{Binding Price}" />
+<Button Content="{Binding Name}" />
 
+((Phone)this.Resources["MyPhone"]).Name = "Sony";
 
+но солькок бьы мы не наживали кнопку вызывающую данную колнструкцию изменией на форме не произовйдет
+
+чтобы обьект мог полноценно исопльзовать механизм привязки ипользуется интерфейс INotifyPropertyChanged
+
+public class Phone : INotifyPropertyChanged
+{
+    private string name;
+    public string Name
+    {
+        get { return name;}
+        set
+        {
+            name = value;
+            OnPropertyChanged(nameof(Name));
+        }
+    }
+    ...
+
+Когда объект класса изменяет значение свойства, то он через событие PropertyChanged извещает систему об изменении 
+свойства. А система обновляет все привязанные объекты.
 
 
 --опции окон wpf
