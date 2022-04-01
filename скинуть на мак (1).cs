@@ -7381,6 +7381,20 @@ namespace Experement
     }
 }
 
+------------------------------------------
+
+ //получаем метаданные о классе в котором находится текстбокс
+                var type = s.GetType();
+                //получаем данные о поле в классе в type
+                var field = type.GetField($"fromName{index + 1}");
+                // получаем даные о типе в field - TextBox
+                var filedType = field.FieldType;
+                // получаем даные о свойстве в типе filedType (в данном случае TextBox.Text)
+                var filedText = filedType.GetProperty("Text");
+                
+                // filedText.SetValue устанавливаем значение в field.GetValue(s)(получаем значение текстбокса
+                //пользуясь информацией из field)
+                filedText.SetValue(field.GetValue(s), "helo");
 
 ------------------------------------------
 можно расщирять атрибуты любым количеством свойств и присваивать их во время создания обьектов, но тк атрибуты существуют для метоопасания
